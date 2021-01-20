@@ -11,6 +11,26 @@ body {
     background-color: #f5f5f5;
 }
 
-section h1 {
+header h1 {
     font-size: 500%;
+    font-weight: 800;
+}
+
+.initial-view {
+    max-width: 40%;
+    margin: 5.5rem auto 1rem auto;
+}
+
+.initial-view__description {
+    line-height: 2;
+}
+
+#link-btn {
+    font-weight: 800;
+    letter-spacing: 2px;
+    font-size: 1.5rem;
+    padding: 1.5rem;
+    margin-top: 5rem;
+    background-color: black;
+    border-color: rgba(0, 0, 0, 0.432);
 }
