@@ -42,3 +42,21 @@ const client = new plaid.Client({
 
 const app = express();
 app.use(express.static('public'));
+app.use(
+    bodyParser.urlencoded({
+        extended: false,
+    })
+);
+app.use(bodyParser.json());
+
+app.get('/', function(request, response, next) {
+    response.sendFile('./views/index.html', { root: __dirname })
+});
+
+const server = app.listen(APP_PORT, function() {
+    console.log('Beam server listening on port ' + APP_PORT);
+});
+
+const prettyPrintResponse = response => {
+    console.log(util.inspect(response, { colors: true, depth: 4 }))
+};
