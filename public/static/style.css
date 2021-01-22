@@ -14,11 +14,16 @@ body {
 header h1 {
     font-size: 500%;
     font-weight: 800;
+    letter-spacing: 4px;
 }
 
 .initial-view {
-    max-width: 40%;
+    max-width: 35%;
     margin: 5.5rem auto 1rem auto;
+}
+
+.initial-view__description, header p {
+    color: rgba(0, 0, 0, 0.6)
 }
 
 .initial-view__description {
@@ -26,11 +31,13 @@ header h1 {
 }
 
 #link-btn {
-    font-weight: 800;
+    font-weight: 300;
     letter-spacing: 2px;
     font-size: 1.5rem;
     padding: 1.5rem;
     margin-top: 5rem;
-    background-color: black;
+    background-color: rgb(207, 83, 74);
+    border: 1px solid rgb(190, 86, 67);
     border-color: rgba(0, 0, 0, 0.432);
+    box-shadow: rgba(15, 15, 15, 0.1) 0px 1px 2px;
 }

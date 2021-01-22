@@ -53,6 +53,14 @@ app.get('/', function(request, response, next) {
     response.sendFile('./views/index.html', { root: __dirname })
 });
 
+app.post('/api/info', function(request, response, next) {
+    response.json({
+        item_id: ITEM_ID,
+        access_token: ACCESS_TOKEN,
+        products: PLAID_PRODUCTS,
+    })
+});
+
 const server = app.listen(APP_PORT, function() {
     console.log('Beam server listening on port ' + APP_PORT);
 });
