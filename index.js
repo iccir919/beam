@@ -61,6 +61,30 @@ app.post('/api/info', function(request, response, next) {
     })
 });
 
+// Create a link token with configs which we can then use to initialize Plaid Link client-side.
+// See https://plaid.com/docs/#create-link-token
+app.post('/api/create_link_token', function (request, response, next) {
+    const configs = {
+        user: {
+            client_user_id: 'unique-user-id'
+        },
+        client_name: 'beam',
+        products: PLAID_PRODUCTS,
+        country_codes: PLAID_COUNTRY_CODES,
+        language: 'en'
+    };
+
+    client.createLinkToken(configs, function(error, createTokenResponse) {
+        if(error != null) {
+            prettyPrintResponse(error);
+            return response.json({
+                error: error,
+            });
+        }
+        response.json(createTokenResponse);
+    });
+})
+
 const server = app.listen(APP_PORT, function() {
     console.log('Beam server listening on port ' + APP_PORT);
 });
