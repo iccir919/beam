@@ -34,26 +34,18 @@
                     <h1>BEAM</h1>
                     <p>a personal finance data visualizer</p>
                 </header>
-
-                <div class="interval-selection d-flex">
-                    <h2>Where I have spent my money in the last</h2>
-                    <div class="dropdown">
-                        <button class="btn dropdown-toggle" type="button" id="interval-selection-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                          <span class="h2">month</span>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="interval-selection-dropdown">
-                          <li><button class="dropdown-item" type="button"><span class="h3">three months</span></button></li>
-                          <li><button class="dropdown-item" type="button"><span class="h3">six months</span></button></li>
-                          <li><button class="dropdown-item" type="button"><span class="h3">year</span></button></li>
-                        </ul>
-                      </div>
-                      <h2>?</h2>
+                <div class="transactions-word-cloud">
+                    <h2>Where have you spent money in the past three months?</h2>
+                    <hr>
                 </div>
             </div>
         </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
         <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script src="./static/d3.layout.cloud.js"></script>
         <script>
             function render_page($, page_info) {
                 var products = page_info.products;
@@ -62,6 +54,7 @@
                 if (page_info.access_token) {
                     $(".initial-view").fadeOut("fast", function () {
                         $(".app").fadeIn("slow");
+                        getTransactions();
                     })
                 }
 
@@ -70,7 +63,6 @@
                         displayError($(".container"), data.error);
                         return;
                     }
-                    console.log(data);
                     localStorage.setItem("link_token", data.link_token);
                     handler = Plaid.create({
                         token: data.link_token,
@@ -83,6 +75,7 @@
                                 function (data) {
                                     $(".initial-view").fadeOut("fast", function () {
                                         $(".app").fadeIn("slow");
+                                        getTransactions();
                                     })
                                 }
                             );
@@ -98,20 +91,130 @@
                 });
             }
 
+            function getTransactions(days=120) {
+                $.get(`/api/transactions?days=${days}`, function (data) {
+                    if (data.error != null && data.error.error_code != null) {
+                        // Format the error
+                        var errorHtml =
+                        '<div class="inner"><p>' +
+                        "<strong>" +
+                        data.error.error_code +
+                        ":</strong> " +
+                        (data.error.display_message == null
+                            ? data.error.error_message
+                            : data.error.display_message) +
+                        "</p></div>";
+
+                        if (data.error.error_code === "PRODUCT_NOT_READY") {
+                            // Add additional context for `PRODUCT_NOT_READY` errors
+                            errorHtml +=
+                            '<div class="inner"><p>Note: The PRODUCT_NOT_READY ' +
+                            "error is returned when a request to retrieve Transaction data " +
+                            "is made before Plaid finishes the initial transaction pull</p></div>";
+                        }
+                        // Render the error
+                        $(".transactions-word-cloud").slideUp(function () {
+                            $(this).slideUp(function () {
+                                $(this).html(errorHtml).slideDown();
+                            });
+                        });
+                    }
+
+                    const transactionsWordArray = getTransactionsWordArray(data);
+                    displayWordCloud(transactionsWordArray);
+                });
+            }
+
+            function getTransactionsWordArray(data) {
+                const elligibleAccounts = data.accounts
+                    .filter(account => account.type === "depository")
+                    .map(account => account.account_id)
+
+                const transactionsWordMap = {};
+
+                data.transactions
+                    .filter(transaction => elligibleAccounts.includes(transaction.account_id))
+                    .forEach(transaction => {
+                        const name = transaction.merchant_name || transaction.name;
+                        if ( transactionsWordMap[name] ) {
+                            transactionsWordMap[name] += transaction.amount * 100;
+                        } else {
+                            transactionsWordMap[name] = transaction.amount * 100;
+                        }
+                    })
+
+                var transactionsWordArray = [];
+
+                for (let name in transactionsWordMap) {
+                    if (transactionsWordMap[name] <= 0) continue;
+                    transactionsWordMap[name] = transactionsWordMap[name] / 100;
+                    transactionsWordArray.push({
+                        name: name,
+                        amount: transactionsWordMap[name]
+                    })
+                }
+                return transactionsWordArray;
+            }
+
+            function displayWordCloud(transactionsWordArray) {
+                var margin = { top: 30, right: 50, bottom: 30, left: 50 };
+                var width = 960 - margin.left - margin.right;
+                var height = 500 - margin.top - margin.bottom;
+
+                var g = d3.select(".transactions-word-cloud")
+                    .append("svg")
+                    .attr("height", 960)
+                    .attr("height", 500)
+                    .append("g")
+                    .attr("transform", `translate(${margin.left}, ${margin.top})`)
+
+                var transactionScale = d3.scaleLinear()
+                    .domain([
+                        d3.min(transactionsWordArray, transaction => transaction.amount ),
+                        d3.max(transactionsWordArray, transaction => transaction.amount )
+                    ])
+                    .range([ 20, 200 ])
+
+                var layout = d3.layout.cloud()
+                    .size([width, height])
+                    .timeInterval(20)
+                    .words(transactionsWordArray)
+                    .rotate( d => 0 )
+                    .fontSize( d => transactionScale(d.amount) )
+                    .fontWeight(["bold"])
+                    .text(d => d.name)
+                    .spiral("rectangular") // "archimedean" or "rectangular"
+                    .on("end", draw)
+                    .start()
+
+                var transactionWordCloud = g.append("g")
+                    .attr("class", "wordcloud")
+                    .attr("transform", `translate(${width / 2}, ${height / 2})`)
+
+                g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${height})`)
+                    .selectAll('text')
+
+                function draw(transactionsWordArray) {
+                    transactionWordCloud.selectAll("text")
+                        .data(transactionsWordArray)
+                        .enter().append("text")
+                        .attr('class', 'word')
+                        .style('font-size', d => `${d.size}px` )
+                        .attr("text-anchor", "middle")
+                        .attr("transform", d =>  `translate(${[d.x, d.y]})rotate(${d.rotate})`)
+                        .text(d => d.text)
+                }
+
+            }
+
             $.post("/api/info", {}, function (result) {
                 render_page(jQuery, result)
             });
 
-            function qs(key) {
-                key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
-                var match = location.search.match(
-                new RegExp("[?&]" + key + "=([^&]+)(&|$)")
-                );
-                return match && decodeURIComponent(match[1].replace(/\+/g, " "));
-            }
 
             function displayError(element, error) {
-                console.log(error)
                 var html = `
                     <div class="alert alert-danger">
                         <p><strong>Error Code:</strong> ${error.error_code}</p>

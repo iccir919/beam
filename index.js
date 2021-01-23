@@ -109,6 +109,29 @@ app.post('/api/set_access_token', function (request, response, next) {
     });
 });
 
+app.get('/api/transactions', function (request, response, next) {
+    // Pull transactions for the Item
+    const days = Number(request.query.days);
+    const startDate = moment().subtract(days, 'days').format('YYYY-MM-DD');
+    const endDate = moment().format('YYYY-MM-DD');
+    client.getAllTransactions(
+        ACCESS_TOKEN,
+        startDate,
+        endDate,
+        function (error, transactionsResponse) {
+            if (error != null) {
+                prettyPrintResponse(error);
+                return response.json({
+                    error,
+                });
+            } else {
+                prettyPrintResponse(transactionsResponse);
+                response.json(transactionsResponse)
+            }
+        }
+    );
+});
+
 const server = app.listen (APP_PORT, function () {
     console.log('Beam server listening on port ' + APP_PORT);
 });
