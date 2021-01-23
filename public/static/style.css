@@ -17,7 +17,7 @@ body {
     max-width: 960px;
     margin-right: auto;
     margin-left: auto;
-    padding: 80px 40px;
+    padding: 40px 40px;
 }
 
 /*
@@ -41,7 +41,7 @@ Initial view
     letter-spacing: 10px;
 }
 
-.initial-view__description, .initial-view__header p {
+.initial-view__description, .initial-view__header p, .app p {
     color: rgba(0, 0, 0, 0.6);
     line-height: 2;
 }
@@ -55,6 +55,34 @@ Initial view
     border: 1px solid rgb(190, 86, 67);
     border-color: rgba(0, 0, 0, 0.432);
     box-shadow: rgba(15, 15, 15, 0.1) 0px 1px 2px;
+}
+
+/*
+
+App view
+
+*/
+.app {
+    display: none;
+}
+
+.app header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.app header h1 {
+    font-size: 250%;
+    font-weight: 800;
+    letter-spacing: 5px;
+}
+
+.interval-selection {
+    justify-content: center;
+}
+
+.interval-selection .dropdown {
+    margin-top: -0.4rem;
 }
 
 /*

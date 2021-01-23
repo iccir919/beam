@@ -49,11 +49,11 @@ app.use(
 );
 app.use(bodyParser.json());
 
-app.get('/', function(request, response, next) {
+app.get('/', function (request, response, next) {
     response.sendFile('./views/index.html', { root: __dirname })
 });
 
-app.post('/api/info', function(request, response, next) {
+app.post('/api/info', function (request, response, next) {
     response.json({
         item_id: ITEM_ID,
         access_token: ACCESS_TOKEN,
@@ -68,13 +68,13 @@ app.post('/api/create_link_token', function (request, response, next) {
         user: {
             client_user_id: 'unique-user-id'
         },
-        client_name: 'beam',
+        client_name: 'Beam',
         products: PLAID_PRODUCTS,
         country_codes: PLAID_COUNTRY_CODES,
         language: 'en'
     };
 
-    client.createLinkToken(configs, function(error, createTokenResponse) {
+    client.createLinkToken( configs, function (error, createTokenResponse ) {
         if(error != null) {
             prettyPrintResponse(error);
             return response.json({
@@ -83,9 +83,33 @@ app.post('/api/create_link_token', function (request, response, next) {
         }
         response.json(createTokenResponse);
     });
-})
+});
 
-const server = app.listen(APP_PORT, function() {
+// Exchange token flow - exchange a Link public_token for
+// an API access_token
+// https://plaid.com/docs/#exchange-token-flow
+app.post('/api/set_access_token', function (request, response, next) {
+    PUBLIC_TOKEN = request.body.public_token;
+    client.exchangePublicToken(PUBLIC_TOKEN, function (error, tokenResponse) {
+        if (error != null) {
+            prettyPrintResponse(error);
+            return response.json({
+                error,
+            })
+        }
+
+        ACCESS_TOKEN = tokenResponse.access_token;
+        ITEM_ID = tokenResponse.item_id;
+        prettyPrintResponse(tokenResponse);
+        response.json({
+            access_token: ACCESS_TOKEN,
+            item_id: ITEM_ID,
+            error: null,
+        });
+    });
+});
+
+const server = app.listen (APP_PORT, function () {
     console.log('Beam server listening on port ' + APP_PORT);
 });
 

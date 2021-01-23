@@ -29,6 +29,27 @@
                     </button>
                 </div>
             </div>
+            <div class="app">
+                <header>
+                    <h1>BEAM</h1>
+                    <p>a personal finance data visualizer</p>
+                </header>
+
+                <div class="interval-selection d-flex">
+                    <h2>Where I have spent my money in the last</h2>
+                    <div class="dropdown">
+                        <button class="btn dropdown-toggle" type="button" id="interval-selection-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                          <span class="h2">month</span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="interval-selection-dropdown">
+                          <li><button class="dropdown-item" type="button"><span class="h3">three months</span></button></li>
+                          <li><button class="dropdown-item" type="button"><span class="h3">six months</span></button></li>
+                          <li><button class="dropdown-item" type="button"><span class="h3">year</span></button></li>
+                        </ul>
+                      </div>
+                      <h2>?</h2>
+                </div>
+            </div>
         </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
@@ -37,9 +58,42 @@
             function render_page($, page_info) {
                 var products = page_info.products;
                 var handler = null;
+
+                if (page_info.access_token) {
+                    $(".initial-view").fadeOut("fast", function () {
+                        $(".app").fadeIn("slow");
+                    })
+                }
+
                 $.post("/api/create_link_token", {}, function (data) {
-                    if (data.error !== null) {
+                    if (data.error != null) {
                         displayError($(".container"), data.error);
+                        return;
+                    }
+                    console.log(data);
+                    localStorage.setItem("link_token", data.link_token);
+                    handler = Plaid.create({
+                        token: data.link_token,
+                        onSuccess: function(public_token) {
+                            $.post(
+                                "/api/set_access_token",
+                                {
+                                    public_token: public_token
+                                },
+                                function (data) {
+                                    $(".initial-view").fadeOut("fast", function () {
+                                        $(".app").fadeIn("slow");
+                                    })
+                                }
+                            );
+                        }
+                    });
+                    $("#link-btn").attr("disabled", false)
+                });
+
+                $("#link-btn").on("click", function (e) {
+                    if (handler != null) {
+                        handler.open();
                     }
                 });
             }
@@ -48,7 +102,16 @@
                 render_page(jQuery, result)
             });
 
+            function qs(key) {
+                key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
+                var match = location.search.match(
+                new RegExp("[?&]" + key + "=([^&]+)(&|$)")
+                );
+                return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+            }
+
             function displayError(element, error) {
+                console.log(error)
                 var html = `
                     <div class="alert alert-danger">
                         <p><strong>Error Code:</strong> ${error.error_code}</p>
