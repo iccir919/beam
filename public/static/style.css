@@ -66,11 +66,6 @@ App view
     display: none;
 }
 
-.app header, .transactions-word-cloud {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
 .app header h1 {
     font-size: 350%;
     font-weight: 800;
