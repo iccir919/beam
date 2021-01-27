@@ -174,21 +174,26 @@
 
                 const transactionsWordArray = getTransactionsWordArray(transactions);
                 displayWordCloud(transactionsWordArray);
+                displayAmountsFluctuation(transactions);
             }
 
-            function displayAmountFluctuation(transactions) {
+            function displayAmountsFluctuation(transactions) {
                 let spent = 0;
                 let income = 0;
 
                 transactions.forEach(transaction => {
                     if (transaction.amount > 0) {
-                        spent += transaction.amount;
+                        spent += transaction.amount * 100;
                     } else {
-                        income += transaction.amount;
+                        income += transaction.amount * 100;
                     }
                 })
 
-
+                income *= -1;
+                spent *= -1;
+                $("#money-delta").html(`<p class="h2">$${((income + spent) / 100).toLocaleString()}</h2>`);
+                $("#money-spent").html(`<p class="h2">$${((spent) / 100).toLocaleString()}</h2>`);
+                $("#money-income").html(`<p class="h2">$${((income) / 100).toLocaleString()}</h2>`);
             }
 
             function getTransactionsWordArray(transactions) {
