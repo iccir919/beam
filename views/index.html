@@ -13,11 +13,11 @@
     <body>
         <main class="main container">
             <div class="initial-view">
-                    <header class="initial-view__header">
+                    <header class="initial-view-header">
                         <h1>BEAM</h1>
-                        <p>a personal finance data visualizer</p>
+                        <p><strong>a personal finance data visualizer</strong></p>
                     </header>
-                    <p class="initial-view__description">
+                    <p class="initial-view-description">
                         Click the button below to open a list of Institutions. After you
                         select one, you’ll be guided through an authentication process.
                         Use username
@@ -34,13 +34,14 @@
                     <h1>BEAM</h1>
                     <p>a personal finance data visualizer</p>
                 </header>
-                <div class="row pt-3 pb-5">
-                    <div class="dropdown col">
+                <div class="row pt-3">
+                    <div class="dropdown col-md-8">
                         <a class="btn btn-outline-dark btn-lg dropdown-toggle disabled" href="#" role="button" id="accountSelectionMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-                          No accounts available
+                          Loading accounts...
                         </a>
                         <ul class="dropdown-menu" id="accountSelectionMenuList" aria-labelledby="accountSelectionMenuLink">
                         </ul>
+                        <p><small>Beam only supports checking, savings, and credit accounts.</small></p>
                     </div>
                     <div class="dropdown col">
                         <a class="btn btn-outline-dark btn-lg dropdown-toggle float-end" role="button" id="intervalSelectionMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
@@ -53,15 +54,18 @@
                         </ul>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row py-3">
                     <div class="col">
-                        <h3>Money direction:</h3>
+                        <h3>Money delta:</h3>
+                        <p class="h2" id="money-delta">$0.00</p>
                     </div>
                     <div class="col">
                         <h3>Total spent:</h3>
+                        <p class="h2" id="money-spent">$0.00</p>
                     </div>
                     <div class="col">
                         <h3>Total income:</h3>
+                        <p class="h2" id="money-income">$0.00</p>
                     </div>
                 </div>
                 <div class="transactions-word-cloud">
@@ -78,6 +82,11 @@
         <script src="https://d3js.org/d3.v4.min.js"></script>
         <script src="./static/d3.layout.cloud.js"></script>
         <script>
+            let transactionsData;
+            let selectedAccount;
+            let selectedInterval = 'THREE_MONTHS';
+
+
             function render_page($, page_info) {
                 var products = page_info.products;
                 var handler = null;
@@ -151,22 +160,41 @@
                         });
                     }
 
-                    populateAccountSelectionMenu(data.accounts)
+                    populateAccountSelectionMenu(data.accounts);
+                    transactionsData = data;
 
-                    const transactionsWordArray = getTransactionsWordArray(data);
-                    displayWordCloud(transactionsWordArray);
+                    renderAccount(data.accounts[0]);
                 });
             }
 
-            function getTransactionsWordArray(data) {
-                const elligibleAccounts = data.accounts
-                    .filter(account => account.type === "depository")
-                    .map(account => account.account_id)
+            const renderAccount = function (account) {
+                const transactions = transactionsData.transactions.filter(transaction => {
+                        return account.account_id === transaction.account_id;
+                });
 
+                const transactionsWordArray = getTransactionsWordArray(transactions);
+                displayWordCloud(transactionsWordArray);
+            }
+
+            function displayAmountFluctuation(transactions) {
+                let spent = 0;
+                let income = 0;
+
+                transactions.forEach(transaction => {
+                    if (transaction.amount > 0) {
+                        spent += transaction.amount;
+                    } else {
+                        income += transaction.amount;
+                    }
+                })
+
+
+            }
+
+            function getTransactionsWordArray(transactions) {
                 const transactionsWordMap = {};
 
-                data.transactions
-                    .filter(transaction => elligibleAccounts.includes(transaction.account_id))
+                transactions
                     .forEach(transaction => {
                         const name = transaction.merchant_name || transaction.name;
                         if ( transactionsWordMap[name] ) {

@@ -31,17 +31,17 @@ Initial view
     margin: 5.5rem auto 1rem auto;
 }
 
-.initial-view__header {
+.initial-view-header {
     margin-bottom: 5rem;
 }
 
-.initial-view__header h1 {
+.initial-view-header h1 {
     font-size: 500%;
     font-weight: 800;
     letter-spacing: 10px;
 }
 
-.initial-view__description, .initial-view__header p, .app p {
+.initial-view-description, .initial-view-header p, .app p {
     color: rgba(0, 0, 0, 0.6);
     line-height: 2;
 }
@@ -78,6 +78,10 @@ svg {
     position: center;
 }
 
+.transactions-word-cloud svg {
+    border: #212529 1px solid;
+    border-radius: 3px;
+}
 /*
 
 Errors
