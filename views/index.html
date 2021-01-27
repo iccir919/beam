@@ -41,7 +41,7 @@
                         </a>
                         <ul class="dropdown-menu" id="accountSelectionMenuList" aria-labelledby="accountSelectionMenuLink">
                         </ul>
-                        <p><small>Beam only supports checking, savings, and credit accounts.</small></p>
+                        <p><small>Beam only supports checking and credit accounts.</small></p>
                     </div>
                     <div class="dropdown col">
                         <a class="btn btn-outline-dark btn-lg dropdown-toggle float-end" role="button" id="intervalSelectionMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
@@ -57,7 +57,7 @@
                 <div class="row py-3">
                     <div class="col">
                         <h3>Money delta:</h3>
-                        <p class="h2" id="money-delta">$0.00</p>
+                        <div class="odometer" id="money-delta">0.00</div>
                     </div>
                     <div class="col">
                         <h3>Total spent:</h3>
@@ -158,22 +158,23 @@
                                 $(this).html(errorHtml).slideDown();
                             });
                         });
+                    } else {
+                        transactionsData = data;
+
+                        populateAccountSelectionMenu(data.accounts, data.accounts[0]);
+                        render_account(data.accounts[0]);
                     }
-
-                    populateAccountSelectionMenu(data.accounts);
-                    transactionsData = data;
-
-                    renderAccount(data.accounts[0]);
                 });
             }
 
-            const renderAccount = function (account) {
+            const render_account = function (account) {
                 const transactions = transactionsData.transactions.filter(transaction => {
                         return account.account_id === transaction.account_id;
                 });
 
                 const transactionsWordArray = getTransactionsWordArray(transactions);
                 displayWordCloud(transactionsWordArray);
+
                 displayAmountsFluctuation(transactions);
             }
 
@@ -191,6 +192,7 @@
 
                 income *= -1;
                 spent *= -1;
+
                 $("#money-delta").html(`<p class="h2">$${((income + spent) / 100).toLocaleString()}</h2>`);
                 $("#money-spent").html(`<p class="h2">$${((spent) / 100).toLocaleString()}</h2>`);
                 $("#money-income").html(`<p class="h2">$${((income) / 100).toLocaleString()}</h2>`);
@@ -222,20 +224,30 @@
                 return transactionsWordArray;
             }
 
-            function populateAccountSelectionMenu(accounts) {
+            function populateAccountSelectionMenu(accounts, selectedAccount) {
                 if (accounts.length === 0) return;
 
+                const validAccountSubTypes = ['checking', 'credit card'];
+
                 $("#accountSelectionMenuLink").removeClass("disabled")
-                accounts.forEach((account, idx) => {
-                    const text = `${account["official_name"] || account.name} - ${account.mask}`
-                    if (idx === 0) {
+                accounts
+                    .filter(account => validAccountSubTypes.includes(account.subtype))
+                    .forEach((account, idx) => {
                         console.log(account)
-                        $("#accountSelectionMenuLink")
-                        .text(text)
-                    } else {
-                        $("#accountSelectionMenuList")
-                            .append(`<li><a class="dropdown-item">${text}</a></li>`)
-                    }
+                        const text = `${account["official_name"] || account.name} - ${account.mask}`
+                        if (account.account_id === selectedAccount.account_id) {
+                            $("#accountSelectionMenuLink").text(text)
+                        } else {
+                            $("#accountSelectionMenuList")
+                                .empty()
+                                .append(`<li><a data-account-id=${account.account_id} class="dropdown-item account-selection-item">${text}</a></li>`);
+                        }
+                    })
+
+                $(".account-selection-item").click(e => {
+                    const selectedAccount = transactionsData.accounts.find(account => account.account_id === e.target.dataset.accountId);
+                    render_account(selectedAccount);
+                    populateAccountSelectionMenu(transactionsData.accounts, selectedAccount)
                 })
             }
 
@@ -243,6 +255,8 @@
                 var margin = { top: 30, right: 50, bottom: 30, left: 50 };
                 var width = 960 - margin.left - margin.right;
                 var height = 500 - margin.top - margin.bottom;
+
+                $(".transactions-word-cloud svg").remove();
 
                 var g = d3.select(".transactions-word-cloud")
                     .append("svg")
