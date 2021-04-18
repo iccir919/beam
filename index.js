@@ -54,12 +54,14 @@ app.get('/', function (request, response, next) {
 });
 
 app.post('/api/info', function (request, response, next) {
-    console.log('Request to /api/info');
-    response.json({
+    console.log('Request received to /api/info');
+    const info = {
         item_id: ITEM_ID,
         access_token: ACCESS_TOKEN,
         products: PLAID_PRODUCTS,
-    })
+    };
+    console.log(info);
+    response.json(info)
 });
 
 // Create a link token with configs which we can then use to initialize Plaid Link client-side.
