@@ -54,6 +54,7 @@ app.get('/', function (request, response, next) {
 });
 
 app.post('/api/info', function (request, response, next) {
+    console.log('Request to /api/info');
     response.json({
         item_id: ITEM_ID,
         access_token: ACCESS_TOKEN,
@@ -81,6 +82,8 @@ app.post('/api/create_link_token', function (request, response, next) {
                 error: error,
             });
         }
+        console.log("Link token created:")
+        prettyPrintResponse(createTokenResponse)
         response.json(createTokenResponse);
     });
 });
@@ -90,6 +93,7 @@ app.post('/api/create_link_token', function (request, response, next) {
 // https://plaid.com/docs/#exchange-token-flow
 app.post('/api/set_access_token', function (request, response, next) {
     PUBLIC_TOKEN = request.body.public_token;
+
     client.exchangePublicToken(PUBLIC_TOKEN, function (error, tokenResponse) {
         if (error != null) {
             prettyPrintResponse(error);
@@ -100,7 +104,10 @@ app.post('/api/set_access_token', function (request, response, next) {
 
         ACCESS_TOKEN = tokenResponse.access_token;
         ITEM_ID = tokenResponse.item_id;
+
+        console.log("Public token exchanged for access token:")
         prettyPrintResponse(tokenResponse);
+
         response.json({
             access_token: ACCESS_TOKEN,
             item_id: ITEM_ID,
@@ -111,9 +118,8 @@ app.post('/api/set_access_token', function (request, response, next) {
 
 app.get('/api/transactions', function (request, response, next) {
     // Pull transactions for the Item
-    const days = Number(request.query.days);
-    const startDate = moment().subtract(days, 'days').format('YYYY-MM-DD');
-    const endDate = moment().format('YYYY-MM-DD');
+    const startDate = '2021-01-01';
+    const endDate = '2021-04-15';
     client.getAllTransactions(
         ACCESS_TOKEN,
         startDate,
@@ -125,7 +131,6 @@ app.get('/api/transactions', function (request, response, next) {
                     error,
                 });
             } else {
-                prettyPrintResponse(transactionsResponse);
                 response.json(transactionsResponse)
             }
         }

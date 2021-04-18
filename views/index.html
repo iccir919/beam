@@ -99,11 +99,14 @@
                 }
 
                 $.post("/api/create_link_token", {}, function (data) {
+                    console.log("Request to /api/create_link_token completed:")
+                    console.log(data);
                     if (data.error != null) {
                         displayError($(".container"), data.error);
                         return;
                     }
                     localStorage.setItem("link_token", data.link_token);
+
                     handler = Plaid.create({
                         token: data.link_token,
                         onSuccess: function(public_token) {
@@ -113,6 +116,9 @@
                                     public_token: public_token
                                 },
                                 function (data) {
+                                    console.log("Link flow complete:")
+                                    console.log(data);
+
                                     $(".initial-view").fadeOut("fast", function () {
                                         $(".app").fadeIn("slow");
                                         getTransactionsData();
@@ -306,11 +312,6 @@
 
             }
 
-            $.post("/api/info", {}, function (result) {
-                render_page(jQuery, result)
-            });
-
-
             function displayError(element, error) {
                 var html = `
                     <div class="alert alert-danger">
@@ -325,6 +326,12 @@
                 `;
                 $(element).html(html).slideDown();
             }
+
+            $.post("/api/info", {}, function (result) {
+                console.log("Request to /api/info completed:")
+                console.log(result)
+                render_page(jQuery, result)
+            });
         </script>
     </body>
 </html>
