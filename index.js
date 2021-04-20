@@ -90,55 +90,6 @@ app.post('/api/create_link_token', function (request, response, next) {
     });
 });
 
-// Exchange token flow - exchange a Link public_token for
-// an API access_token
-// https://plaid.com/docs/#exchange-token-flow
-app.post('/api/set_access_token', function (request, response, next) {
-    PUBLIC_TOKEN = request.body.public_token;
-
-    client.exchangePublicToken(PUBLIC_TOKEN, function (error, tokenResponse) {
-        if (error != null) {
-            prettyPrintResponse(error);
-            return response.json({
-                error,
-            })
-        }
-
-        ACCESS_TOKEN = tokenResponse.access_token;
-        ITEM_ID = tokenResponse.item_id;
-
-        console.log("Public token exchanged for access token:")
-        prettyPrintResponse(tokenResponse);
-
-        response.json({
-            access_token: ACCESS_TOKEN,
-            item_id: ITEM_ID,
-            error: null,
-        });
-    });
-});
-
-app.get('/api/transactions', function (request, response, next) {
-    // Pull transactions for the Item
-    const startDate = '2021-01-01';
-    const endDate = '2021-04-15';
-    client.getAllTransactions(
-        ACCESS_TOKEN,
-        startDate,
-        endDate,
-        function (error, transactionsResponse) {
-            if (error != null) {
-                prettyPrintResponse(error);
-                return response.json({
-                    error,
-                });
-            } else {
-                response.json(transactionsResponse)
-            }
-        }
-    );
-});
-
 const server = app.listen (APP_PORT, function () {
     console.log('Beam server listening on port ' + APP_PORT);
 });

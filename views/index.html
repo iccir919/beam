@@ -39,7 +39,9 @@
                     console.log(data);
 
                     if (data.error != null) {
-
+                        $('.initial-spinner').hide();
+                        displayError($("#container"), data.error);
+                        return;
                     }
 
                     $("#initial-spinner").hide();
@@ -53,6 +55,21 @@
                 console.log(result);
                 render_page(jQuery, result);
             });
+
+            function displayError(element, error) {
+                var html = `
+                    <div class="alert alert-danger">
+                        <p><strong>Error Code:</strong> ${error.error_code}</p>
+                        <p><strong>Error Type:</strong> ${error.error_type}</p>
+                        <p><strong>Error Message:</strong> ${
+                            error.display_message == null
+                            ? error.error_message
+                            : error.display_message
+                        }</p>
+                    </div>
+                `;
+                $(element).html(html).slideDown();
+            }
         </script>
     </body>
 </html>
