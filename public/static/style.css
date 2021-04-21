@@ -47,3 +47,7 @@ Errors
     color: #a94442;
     font-weight: bold;
 }
+
+#connected-view {
+    display: none;
+}
