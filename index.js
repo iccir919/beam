@@ -64,8 +64,6 @@ app.post('/api/info', function (request, response, next) {
     response.json(info)
 });
 
-// Create a link token with configs which we can then use to initialize Plaid Link client-side.
-// See https://plaid.com/docs/#create-link-token
 app.post('/api/create_link_token', function (request, response, next) {
     const configs = {
         user: {
@@ -87,6 +85,28 @@ app.post('/api/create_link_token', function (request, response, next) {
         console.log("Link token created:")
         prettyPrintResponse(createTokenResponse)
         response.json(createTokenResponse);
+    });
+});
+
+app.post('/api/set_access_token', function (request, response) {
+    PUBLIC_TOKEN = request.body.public_token;
+    client.exchangePublicToken(PUBLIC_TOKEN, function (error, tokenResponse) {
+        if (error != null) {
+            prettyPrintResponse(error);
+            return response.json({
+                error,
+            })
+        }
+
+        ACCESS_TOKEN = tokenResponse.access_token;
+        ITEM_ID = tokenResponse.item_id;
+        console.log("Access token created:")
+        prettyPrintResponse(tokenResponse);
+        response.json({
+            access_token: ACCESS_TOKEN,
+            item_id: ITEM_ID,
+            error: null,
+        });
     });
 });
 
