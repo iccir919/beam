@@ -2,7 +2,9 @@
   "name": "beam",
   "version": "1.0.0",
   "description": "Personal finance data visualizer powered by Plaid",
-  "keywords": [ "Plaid" ],
+  "keywords": [
+    "Plaid"
+  ],
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -23,7 +25,9 @@
     "body-parser": "^1.19.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "firebase": "^8.4.1",
     "moment": "^2.29.1",
+    "mongodb": "^3.6.6",
     "nodemon": "^2.0.7",
     "plaid": "^8.1.3"
   }
