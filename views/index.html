@@ -6,91 +6,66 @@
 
         <title>BEAM - a personal finance visualizer</title>
 
-        <link rel="stylesheet" type="text/css" href="./static/style.css">
+        <link rel="stylesheet" type="text/css" href="/static/style.css">
+
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
 
         <script src="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.js"></script>
         <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.css" />
     </head>
-    <body class="d-flex flex-column text-center">
-        <div class="container">
-            <h1 class="display-1 fw-bold mb-5">BEAM</h1>
-            <div class="row gap-4">
-                <p class="col-md lead lh-lg my-auto">
-                    Gain insight to your personal finances with Beam, an application that obtains your data through <a class="text-decoration-none" href="https://plaid.com/how-it-works-for-consumers/" target="_blank">Plaid</a> and provides enlightening visualizations which help you to understand the flow of your money.
-                </p>
-                <div id="firebaseui-auth-container" class="col-md"></div>
-            </div>
+    <body>
+        <div class="container d-flex flex-column text-center h-100">
+            <main>
+                <h1 class="display-1 fw-bold my-5 ">BEAM</h1>
+                <div class="row gap-4">
+                    <p class="col-md lead lh-lg my-auto">
+                        Gain insight to your personal finances with Beam, an application that obtains your data through <a class="text-decoration-none" href="https://plaid.com/how-it-works-for-consumers/" target="_blank">Plaid</a> and provides enlightening visualizations which help you to understand the flow of your money.
+                    </p>
+                    <div id="firebaseui-auth-container" class="col-md"></div>
+                </div>
+            </main>
+            <footer class="footer mt-auto py-3 bg-light">
+                <div>
+                  <span class="text-muted">Made with love ❤️ by <a href="https://neilricci.github.io/" class="text-decoration-none" target="_blank">Neil</a>.</span>
+                </div>
+            </footer>
         </div>
-        <footer class="footer mt-auto py-3 bg-light">
-            <div class="container">
-              <span class="text-muted">Made with love ❤️ by <a href="https://neilricci.github.io/" class="text-decoration-none" target="_blank">Neil</a>.</span>
-            </div>
-        </footer>
 
-        <script src="./static/jQuery.js"></script>
-        <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+        <script src="/static/jQuery.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
 
-            <!-- The core Firebase JS SDK is always required and must be listed first -->
-            <script src="https://www.gstatic.com/firebasejs/8.4.2/firebase-app.js"></script>
 
-            <!-- TODO: Add SDKs for Firebase products that you want to use
-                https://firebase.google.com/docs/web/setup#available-libraries -->
-            <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-auth.js"></script>
-            <script src="https://www.gstatic.com/firebasejs/8.4.2/firebase-analytics.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.4.2/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.4.2/firebase-analytics.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.4.2/firebase-auth.js"></script>
 
-            <script>
-            // Your web app's Firebase configuration
-            // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        <script>
             var firebaseConfig = {
                 apiKey: "AIzaSyC1AE6LT8ZBPqYIWZJ4Pbs28TqW5oSnwWg",
                 authDomain: "beam-fdfaa.firebaseapp.com",
+                databaseURL: "https://beam-fdfaa-default-rtdb.firebaseio.com",
                 projectId: "beam-fdfaa",
-                storageBucket: "beam-fdfaa.appspot.com",
-                messagingSenderId: "511819629561",
                 appId: "1:511819629561:web:40ba9a255c0373cccc7328",
                 measurementId: "G-E66W95H373"
             };
-            // Initialize Firebase
+
             firebase.initializeApp(firebaseConfig);
             firebase.analytics();
-        </script>
 
-        <script>
-            // FirebaseUI config.
-            var uiConfig = {
-                signInSuccessUrl: '/',
-                signInOptions: [
-                    // Leave the lines as is for the providers you want to offer your users.
-                    firebase.auth.EmailAuthProvider.PROVIDER_ID,
-                ],
-                // tosUrl and privacyPolicyUrl accept either url string or a callback
-                // function.
-                // Terms of service url/callback.
-                tosUrl: '<your-tos-url>',
-                // Privacy policy url/callback.
-                privacyPolicyUrl: function() {
-                    window.location.assign('<your-privacy-policy-url>');
-                }
-            };
-
-            // Initialize the FirebaseUI Widget using Firebase.
             var ui = new firebaseui.auth.AuthUI(firebase.auth());
-            // The start method will wait until the DOM is loaded.
-            ui.start('#firebaseui-auth-container', uiConfig);
+            ui.start('#firebaseui-auth-container', {
+                signInOptions: [
+                    firebase.auth.EmailAuthProvider.PROVIDER_ID
+                ],
+                signInSuccessUrl: '/'
+            });
 
+            var user = firebase.auth().currentUser;
 
-            firebase.auth().onAuthStateChanged((user) => {
+            firebase.auth().onAuthStateChanged(function(user) {
                 if (user) {
-                    // User is signed in, see docs for a list of available properties
-                    // https://firebase.google.com/docs/reference/js/firebase.User
-                    var uid = user.uid;
                     console.log(user);
-                    // ...
-                } else {
-                    // User is signed out
-                    // ...
+                    window.location.replace('/user/' + user.uid);
                 }
             });
         </script>
