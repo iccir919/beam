@@ -15,7 +15,7 @@ firebaseAdmin.initializeApp({
   databaseURL: "https://beam-fdfaa-default-rtdb.firebaseio.com"
 });
 
-const databaseReference = firebaseAdmin.database();
+const databseRef = firebaseAdmin.database();
 
 
 const app = express();
@@ -30,18 +30,33 @@ app.use(bodyParser.json());
 
 
 app.get('/', function (req, res, next) {
-    res.sendFile('./views/index.html', { root: __dirname })
+    res.sendFile('./views/index.html', { root: __dirname });
 });
 
-app.get('/user/:userId', function(req, res) {
-    const ref = databaseReference.ref(`users/${req.params.userId}`)
-    ref.once("value")
+app.get('/user/:uid', function(req, res) {
+    const userRef = databseRef.ref(`users/${req.params.uid}`)
+    userRef.once("value")
         .then(function(snapshot) {
-
-            res.send(`
-                User found? ${snapshot.exists()}
-                Name: ${snapshot.child("name").val()}
-            `)
+            if (snapshot.exists()) {
+                res.sendFile('./views/profile.html', { root: __dirname });
+            } else {
+                firebaseAdmin
+                    .auth()
+                    .getUser(req.params.uid)
+                    .then((userRecord) => {
+                        const usersRef = databseRef.ref("users");
+                        usersRef.child(req.params.uid).set({
+                            email: userRecord.email,
+                            createdAt: Date.now(),
+                            displayName: userRecord.displayName
+                        }, function() {
+                            res.sendFile('./views/profile.html', { root: __dirname });
+                        })
+                    })
+                    .catch((error) => {
+                        console.log('Error fetching user data:', error);
+                    });
+            }
         })
 })
 
