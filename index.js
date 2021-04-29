@@ -15,12 +15,8 @@ firebaseAdmin.initializeApp({
   databaseURL: "https://beam-fdfaa-default-rtdb.firebaseio.com"
 });
 
-const databaseReference = firebaseAdmin.database().ref();
-databaseReference.once("value")
-  .then(function(snapshot) {
-    var name = snapshot.child("name").val();
-    console.log(name);
-});
+const databaseReference = firebaseAdmin.database();
+
 
 const app = express();
 app.use(express.static('public'));
@@ -38,7 +34,15 @@ app.get('/', function (req, res, next) {
 });
 
 app.get('/user/:userId', function(req, res) {
-    res.sendFile('./views/profile.html', { root: __dirname })
+    const ref = databaseReference.ref(`users/${req.params.userId}`)
+    ref.once("value")
+        .then(function(snapshot) {
+
+            res.send(`
+                User found? ${snapshot.exists()}
+                Name: ${snapshot.child("name").val()}
+            `)
+        })
 })
 
 const server = app.listen (APP_PORT, function () {
