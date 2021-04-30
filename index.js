@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const moment = require('moment');
 const plaid = require('plaid');
 const firebaseAdmin = require('firebase-admin');
-const serviceAccount = require("./serviceAccountKey.json");
+const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY);
 
 const APP_PORT = process.env.APP_PORT || 8000;
 

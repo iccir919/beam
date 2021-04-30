@@ -1,0 +1,17 @@
+/*
+
+Base
+
+*/
+
+html,
+body {
+    height: 100%;
+}
+
+
+@media (min-width: 992px) {
+    .main-row {
+        height: 381px
+    }
+}
