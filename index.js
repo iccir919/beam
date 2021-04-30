@@ -8,7 +8,7 @@ const plaid = require('plaid');
 const firebaseAdmin = require('firebase-admin');
 const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY);
 
-const APP_PORT = process.env.APP_PORT || 8000;
+const APP_PORT = process.env.PORT || 8000;
 
 firebaseAdmin.initializeApp({
   credential: firebaseAdmin.credential.cert(serviceAccount),
