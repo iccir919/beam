@@ -8,7 +8,7 @@ const plaid = require('plaid');
 const firebaseAdmin = require('firebase-admin');
 const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY);
 
-const APP_PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8000;
 
 firebaseAdmin.initializeApp({
   credential: firebaseAdmin.credential.cert(serviceAccount),
@@ -58,10 +58,10 @@ app.get('/user/:uid', function(req, res) {
                     });
             }
         })
-})
+});
 
-const server = app.listen (APP_PORT, function () {
-    console.log('Beam server listening on port ' + APP_PORT);
+const server = app.listen (PORT, function () {
+    console.log('Beam server listening on port ' + PORT);
 });
 
 const prettyPrintResponse = response => {
