@@ -2,6 +2,6 @@ body {
   height: 100%;
 }
 
-nav {
-  max-width: 760px;
+#main-content {
+  display: none;
 }
