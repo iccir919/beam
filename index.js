@@ -60,6 +60,13 @@ app.get('/user/:uid', function(req, res) {
         })
 });
 
+app.post('/api/accounts/get', function(req, res) {
+    console.log("POST request made to /api/accounts/get")
+    console.log("  Body: ", req.body);
+
+    res.json({ accounts: [] })
+})
+
 const server = app.listen (PORT, function () {
     console.log('Beam server listening on port ' + PORT);
 });
