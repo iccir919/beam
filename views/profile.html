@@ -119,7 +119,8 @@
               $.post(
                 "/api/set_access_token",
                 {
-                  public_token: public_token
+                  public_token: public_token,
+                  uid: uid
                 },
                 function (data) {
                   console.log("Successful POST request to /api/set_access_token")

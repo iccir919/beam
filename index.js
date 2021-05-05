@@ -112,7 +112,12 @@ app.post('/api/set_access_token', function(req, res) {
               error: error,
             });
         }
-        console.log(tokenResponse)
+        const itemsRef = databseRef.ref(`users/${req.body.uid}/items`);
+        const newItemRef = itemsRef.push();
+        newItemRef.set({
+            access_token: tokenResponse.access_token,
+            item_id: tokenResponse.item_id
+        });
         res.json({access_token: tokenResponse.access_token })
     });
 });
