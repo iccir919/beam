@@ -2,6 +2,6 @@ body {
   height: 100%;
 }
 
-#main-content {
+#main-content, #link-btn {
   display: none;
 }

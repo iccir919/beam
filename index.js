@@ -1,14 +1,35 @@
 
 require('dotenv').config();
+
 const util = require('util');
 const express = require('express');
 const bodyParser = require('body-parser');
+
 const moment = require('moment');
 const plaid = require('plaid');
+
 const firebaseAdmin = require('firebase-admin');
 const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY);
 
 const PORT = process.env.PORT || 8000;
+
+const PLAID_CLIENT_ID = process.env.PLAID_CLIENT_ID;
+const PLAID_SECRET = process.env.PLAID_SECRET;
+
+
+
+const PLAID_ENV = process.env.PLAID_ENV;
+const PLAID_PRODUCTS = ['transactions'];
+const PLAID_COUNTRY_CODES = ['US', 'CA'];
+
+const client = new plaid.Client({
+    clientID: PLAID_CLIENT_ID,
+    secret: PLAID_SECRET,
+    env: plaid.environments[PLAID_ENV],
+    options: {
+        version: '2019-05-29'
+    }
+});
 
 firebaseAdmin.initializeApp({
   credential: firebaseAdmin.credential.cert(serviceAccount),
@@ -16,7 +37,6 @@ firebaseAdmin.initializeApp({
 });
 
 const databseRef = firebaseAdmin.database();
-
 
 const app = express();
 app.use(express.static('public'));
@@ -32,6 +52,7 @@ app.use(bodyParser.json());
 app.get('/', function (req, res, next) {
     res.sendFile('./views/index.html', { root: __dirname });
 });
+
 
 app.get('/user/:uid', function(req, res) {
     const userRef = databseRef.ref(`users/${req.params.uid}`)
@@ -60,12 +81,48 @@ app.get('/user/:uid', function(req, res) {
         })
 });
 
+
+app.post('/api/create_link_token', function(req, res) {
+    console.log("country_code_type", typeof PLAID_COUNTRY_CODES)
+    const configs = {
+        'user': {
+            'client_user_id': req.body.uid
+        },
+        'client_name': "Beam",
+        'products': PLAID_PRODUCTS,
+        'country_codes': PLAID_COUNTRY_CODES,
+        'language': "en"
+    };
+
+    client.createLinkToken(configs, function(error, createTokenResponse) {
+        if (error !== null) {
+            return res.json({
+                error: error
+            });
+        }
+        res.json(createTokenResponse);
+    });
+});
+
+app.post('/api/set_access_token', function(req, res) {
+    const PUBLIC_TOKEN = req.body.public_token;
+    client.exchangePublicToken(PUBLIC_TOKEN, function(error, tokenResponse) {
+        if (error != null) {
+            return response.json({
+              error: error,
+            });
+        }
+        console.log(tokenResponse)
+        res.json({access_token: tokenResponse.access_token })
+    });
+});
+
 app.post('/api/accounts/get', function(req, res) {
     console.log("POST request made to /api/accounts/get")
     console.log("  Body: ", req.body);
 
     res.json({ accounts: [] })
-})
+});
 
 const server = app.listen (PORT, function () {
     console.log('Beam server listening on port ' + PORT);

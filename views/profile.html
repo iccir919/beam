@@ -6,8 +6,8 @@
 
     <title>BEAM - a personal finance visualizer</title>
 
-    <link rel="stylesheet" type="text/css" href="/static/profile.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/static/profile.css">
 
   </head>
 
@@ -34,35 +34,19 @@
       </header>
 
       <div class="row mt-3">
-        <div class="col-md-6">
-          <p class="h2">Connected Accounts</p>
-          <ul class="list-group mt-2">
-            <li class="list-group-item">
-              <input class="form-check-input me-1" type="checkbox" value="" aria-label="...">
-              First checkbox
-            </li>
-            <li class="list-group-item">
-              <input class="form-check-input me-1" type="checkbox" value="" aria-label="...">
-              Second checkbox
-            </li>
-            <li class="list-group-item">
-              <input class="form-check-input me-1" type="checkbox" value="" aria-label="...">
-              Third checkbox
-            </li>
-            <li class="list-group-item">
-              <input class="form-check-input me-1" type="checkbox" value="" aria-label="...">
-              Fourth checkbox
-            </li>
-            <li class="list-group-item">
-              <input class="form-check-input me-1" type="checkbox" value="" aria-label="...">
-              Fifth checkbox
-            </li>
-          </ul>
-          <button type="button" class="mt-2 btn btn-primary">Connect an account with Plaid</button>
-        </div>
-        <div class="col-md-6">
-          <p class="h2">At A Glance</p>
-        </div>
+          <div class="col-md-6 accounts">
+            <p class="h2">Connected Accounts</p>
+            <p class="fw-light">You have not connected any accounts yet 😕</p>
+            <div class="text-center">
+              <div id="link-btn-spinner" class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <button id="link-btn" type="button" class="btn btn-primary mt-2 float-md-start">Connect an account with Plaid</button>
+            </div>
+          </div>
+          <div class="col-md-6">
+
+          </div>
       </div>
     </main>
 
@@ -90,12 +74,12 @@
       firebase.analytics();
 
       firebase.auth().onAuthStateChanged(function(user) {
-        console.log(user)
         if (user) {
           $("#initial-spinner").hide();
-          $("#greeting").text("Welcome, " + user.displayName + "!");
+          $("#greeting").text("Welcome 👋, " + user.displayName + "!");
           $("#greeting-date").text(new Date().toDateString())
           $("#main-content").fadeIn("slow");
+          createLinkToken(user.uid);
           getAccounts(user.uid);
         } else {
           window.location.replace('/');
@@ -106,10 +90,55 @@
         firebase.auth().signOut().then(() => {
           window.location.replace('/')
         }).catch((error) => {
-          // An error happened.
           console.log(error);
         });
       });
+
+      var handler = null;
+
+      function createLinkToken(uid) {
+        fetch('/api/create_link_token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 'uid': uid })
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log("Successful POST request to /api/create_link_token")
+          console.log("  Response:", data);
+
+          if (data.error != null) {
+
+          }
+
+          handler = Plaid.create({
+            token: data.link_token,
+            onSuccess: function(public_token) {
+              $.post(
+                "/api/set_access_token",
+                {
+                  public_token: public_token
+                },
+                function (data) {
+                  console.log("Successful POST request to /api/set_access_token")
+                  console.log("  Response:", data)
+                }
+              );
+            }
+          })
+
+          $("#link-btn").on("click", function (e) {
+            if (handler != null) {
+              handler.open();
+            }
+          });
+
+          $("#link-btn-spinner").hide();
+          $("#link-btn").fadeIn();
+        })
+      }
 
       function getAccounts(uid) {
         fetch('/api/accounts/get', {
