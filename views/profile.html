@@ -36,7 +36,9 @@
       <div class="row mt-3">
           <div class="col-md-6 accounts">
             <p class="h2">Connected Accounts</p>
-            <p class="fw-light">You have not connected any accounts yet 😕</p>
+            <div id="accounts-list">
+              <p class="fw-light">You have not connected any accounts yet 😕</p>
+            </div>
             <div class="text-center">
               <div id="link-btn-spinner" class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
@@ -152,8 +154,24 @@
         .then(response => response.json())
         .then(data => {
           console.log("Successful POST request to /api/accounts/get")
-          console.log("  Response:", data)
+          console.log("  Response:", data);
+          displayAccounts(data.accounts)
         })
+      }
+
+      function displayAccounts(accounts) {
+        const accountsListHtml = `
+          <ul class="list-group">
+            ${accounts.map(account => {
+              return `<li class="list-group-item">
+                  <input class="form-check-input me-1" type="checkbox">
+                    ${account.name}
+                </li>`
+            }).join('')}
+          </ul>
+        `;
+
+        $("#accounts-list").replaceWith(accountsListHtml)
       }
 
 

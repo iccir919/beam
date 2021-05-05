@@ -143,7 +143,6 @@ app.post('/api/accounts/get', function(req, res) {
             res.json({ accounts: accounts });
         });
 
-
     }, function (errorObject) {
         console.log("The read failed: " + errorObject.code);
     });
