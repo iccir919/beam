@@ -57,33 +57,33 @@ app.get('/', function (req, res, next) {
 app.get('/user/:uid', function(req, res) {
     const userRef = databseRef.ref(`users/${req.params.uid}`)
     userRef.once("value")
-        .then(function(snapshot) {
-            if (snapshot.exists()) {
-                res.sendFile('./views/profile.html', { root: __dirname });
-            } else {
-                firebaseAdmin
-                    .auth()
-                    .getUser(req.params.uid)
-                    .then((userRecord) => {
-                        const usersRef = databseRef.ref("users");
-                        usersRef.child(req.params.uid).set({
-                            email: userRecord.email,
-                            createdAt: Date.now(),
-                            displayName: userRecord.displayName
-                        }, function() {
-                            res.sendFile('./views/profile.html', { root: __dirname });
-                        })
+    .then(function(snapshot) {
+        if (snapshot.exists()) {
+            res.sendFile('./views/profile.html', { root: __dirname });
+        } else {
+            firebaseAdmin
+                .auth()
+                .getUser(req.params.uid)
+                .then((userRecord) => {
+                    const usersRef = databseRef.ref("users");
+                    usersRef.child(req.params.uid).set({
+                        email: userRecord.email,
+                        createdAt: Date.now(),
+                        displayName: userRecord.displayName
+                    }, function() {
+                        res.sendFile('./views/profile.html', { root: __dirname });
                     })
-                    .catch((error) => {
-                        console.log('Error fetching user data:', error);
-                    });
-            }
-        })
+                })
+                .catch((error) => {
+                    console.log('Error fetching user data:', error);
+                });
+        }
+    })
 });
 
 
 app.post('/api/create_link_token', function(req, res) {
-    console.log("country_code_type", typeof PLAID_COUNTRY_CODES)
+
     const configs = {
         'user': {
             'client_user_id': req.body.uid
@@ -118,15 +118,35 @@ app.post('/api/set_access_token', function(req, res) {
             access_token: tokenResponse.access_token,
             item_id: tokenResponse.item_id
         });
-        res.json({access_token: tokenResponse.access_token })
+        res.json({ access_token: tokenResponse.access_token })
     });
 });
 
 app.post('/api/accounts/get', function(req, res) {
-    console.log("POST request made to /api/accounts/get")
-    console.log("  Body: ", req.body);
+    const itemsRef = databseRef.ref(`users/${req.body.uid}/items`);
+    itemsRef.on("value", function(snapshot) {
+        const items = snapshot.val();
+        let access_tokens = [];
+        for (let item in items) {
+            if (items.hasOwnProperty(item)) {
+                access_tokens.push(items[item].access_token);
+            }
+        }
 
-    res.json({ accounts: [] })
+        Promise.all(access_tokens.map(access_token => {
+            return client.getAccounts(access_token)
+        }))
+        .then(data => {
+            const accounts = [].concat.apply([], data.map(item => {
+                return item.accounts
+            }));
+            res.json({ accounts: accounts });
+        });
+
+
+    }, function (errorObject) {
+        console.log("The read failed: " + errorObject.code);
+    });
 });
 
 const server = app.listen (PORT, function () {
