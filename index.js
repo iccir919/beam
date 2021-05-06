@@ -126,19 +126,19 @@ app.post('/api/accounts/get', function(req, res) {
     const itemsRef = databseRef.ref(`users/${req.body.uid}/items`);
     itemsRef.on("value", function(snapshot) {
         const items = snapshot.val();
-        let access_tokens = [];
-        for (let item in items) {
-            if (items.hasOwnProperty(item)) {
-                access_tokens.push(items[item].access_token);
-            }
-        }
+        const access_tokens = getAccessTokens(items);
 
         Promise.all(access_tokens.map(access_token => {
             return client.getAccounts(access_token)
         }))
         .then(data => {
+            console.log(data);
             const accounts = [].concat.apply([], data.map(item => {
-                return item.accounts
+                return item.accounts.filter(account => {
+                    return account.type === "credit"
+                    || account.subtype === "checking"
+                    || account.subtype === "savings";
+                })
             }));
             res.json({ accounts: accounts });
         });
@@ -148,6 +148,17 @@ app.post('/api/accounts/get', function(req, res) {
     });
 });
 
+
+app.post('/api/transactions/get', function(req, res) {
+    const itemsRef = databseRef.ref(`users/${req.body.uid}/items`);
+    itemsRef.on("value", function(snapshot) {
+        const items = snapshot.val();
+        const access_tokens = getAccessTokens(items);
+
+
+    });
+})
+
 const server = app.listen (PORT, function () {
     console.log('Beam server listening on port ' + PORT);
 });
@@ -155,3 +166,13 @@ const server = app.listen (PORT, function () {
 const prettyPrintResponse = response => {
     console.log(util.inspect(response, { colors: true, depth: 4 }))
 };
+
+const getAccessTokens = (items) => {
+    let access_tokens = [];
+    for (let item in items) {
+        if (items.hasOwnProperty(item)) {
+            access_tokens.push(items[item].access_token);
+        }
+    }
+    return access_tokens;
+}

@@ -36,6 +36,7 @@
       <div class="row mt-3">
           <div class="col-md-6 accounts">
             <p class="h2">Connected Accounts</p>
+            <p class="fw-light">Only checking, savings, and credit card accounts are supported.</p>
             <div id="accounts-list">
               <p class="fw-light">You have not connected any accounts yet 😕</p>
             </div>
@@ -43,11 +44,10 @@
               <div id="link-btn-spinner" class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
               </div>
-              <button id="link-btn" type="button" class="btn btn-primary mt-2 float-md-start">Connect an account with Plaid</button>
+              <button id="link-btn" type="button" class="btn btn-primary w-100 mt-3">Connect an account with Plaid</button>
             </div>
           </div>
           <div class="col-md-6">
-
           </div>
       </div>
     </main>
@@ -140,6 +140,21 @@
 
           $("#link-btn-spinner").hide();
           $("#link-btn").fadeIn();
+        })
+      }
+
+      function getTransactions(uid, item_id, numberOfDays) {
+        fetch('/api/transactions/get', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'applications/json'
+          },
+          body: JSON.stringify({ 'uid': uid })
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log("Successful POST request to /api/transactions/get");
+          console.log("  Response:", data);
         })
       }
 
