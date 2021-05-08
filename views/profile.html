@@ -16,7 +16,7 @@
     <nav class="navbar border-bottom py-3 mt-2">
       <div class="container">
         <span class="navbar-brand mb-0 h1">BEAM</span>
-        <button id="sign-out" class="btn btn-sm btn-outline-danger me-2" type="button">Sign Out</button>
+        <button id="sign-out" class="btn btn-sm btn-outline-dark me-2" type="button">Sign Out</button>
       </div>
     </nav>
 
@@ -33,21 +33,72 @@
         <p id="greeting-date" class="h5 fw-light"></p>
       </header>
 
-      <div class="row mt-3">
-          <div class="col-md-6 accounts">
-            <p class="h2">Connected Accounts</p>
+      <div class="row">
+          <div class="col-md-6">
+            <p class="h2">Displayed Accounts</p>
             <p class="fw-light">Only checking, savings, and credit card accounts are supported.</p>
-            <div id="accounts-list">
-              <p class="fw-light">You have not connected any accounts yet 😕</p>
+            <div>
+              <div class="mt-3">
+                <header class="d-flex justify-content-between">
+                  <div>
+                    <p class="h5">Bank of America</p>
+                    <p class="fw-lighter">Last updated: Today</p>
+                  </div>
+                  <div>
+                    <button type="button" class="my-auto btn btn-sm btn-outline-danger">Disconnect</button>
+                  </div>
+                </header>
+                <div class="list-group">
+                  <label class="list-group-item">
+                    <input class="form-check-input me-1" type="checkbox" value="">
+                    Checkings Plus Account
+                  </label>
+                  <label class="list-group-item">
+                    <input class="form-check-input me-1" type="checkbox" value="">
+                    Savings Account
+                  </label>
+                </div>
+              </div>
+              <div class="mt-3">
+                <header class="d-flex justify-content-between">
+                  <div>
+                    <p class="h5">Chase</p>
+                    <p class="fw-lighter">Last updated: Today</p>
+                  </div>
+                  <div>
+                    <button type="button" class="btn btn-sm btn-outline-danger">Disconnect</button>
+                  </div>
+                </header>
+                <div class="list-group">
+                  <label class="list-group-item">
+                    <input class="form-check-input me-1" type="checkbox" value="">
+                    Lemonade Stand Business Account
+                  </label>
+                </div>
+              </div>
+              <!-- <p class="fw-light">You have not connected any accounts yet 😕</p> -->
             </div>
             <div class="text-center">
               <div id="link-btn-spinner" class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
               </div>
-              <button id="link-btn" type="button" class="btn btn-primary w-100 mt-3">Connect an account with Plaid</button>
+              <button id="link-btn" type="button" class="btn btn-primary w-100 mt-3">Connect your bank via Plaid</button>
             </div>
           </div>
           <div class="col-md-6">
+            <div class="row">
+              <p class="fs-3">I want to look at...</p>
+              <div class="dropdown">
+                <button class="btn btn-lg btn-light dropdown-toggle w-100" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                  the past week.
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton1">
+                  <li><a class="dropdown-item active" href="#">the past week</a></li>
+                  <li><a class="dropdown-item" href="#">the past month</a></li>
+                  <li><a class="dropdown-item" href="#">the past six months</a></li>
+                </ul>
+              </div>
+            </div>
           </div>
       </div>
     </main>
@@ -143,6 +194,8 @@
         })
       }
 
+
+
       function getTransactions(uid, item_id, numberOfDays) {
         fetch('/api/transactions/get', {
           method: 'POST',
@@ -170,24 +223,11 @@
         .then(data => {
           console.log("Successful POST request to /api/accounts/get")
           console.log("  Response:", data);
-          displayAccounts(data.accounts)
+
         })
       }
 
-      function displayAccounts(accounts) {
-        const accountsListHtml = `
-          <ul class="list-group">
-            ${accounts.map(account => {
-              return `<li class="list-group-item">
-                  <input class="form-check-input me-1" type="checkbox">
-                    ${account.name}
-                </li>`
-            }).join('')}
-          </ul>
-        `;
 
-        $("#accounts-list").replaceWith(accountsListHtml)
-      }
 
 
     </script>
