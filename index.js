@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const PORT = process.env.PORT || 8000;
 
-app.use(express.static('public'))
+app.use(express.static(__dirname + '/public'))
 
 // parse request bodies (req.body)
 app.use(express.urlencoded({ extended: true }))
