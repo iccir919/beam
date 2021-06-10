@@ -11,6 +11,6 @@ app.get('/', (req, res) => {
     res.sendFile('views/index.html', { root: __dirname })
 })
 
-app.listen(port, () => {
+app.listen(PORT, () => {
   console.log(`Example app listening at http://localhost:${PORT}`)
 })
