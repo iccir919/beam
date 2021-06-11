@@ -23,7 +23,7 @@
                 <p class="col-lg-10 fs-4">Take a visual 📈 look at your personal finances with Beam, an app that obtains your data through <a class="text-decoration-none" href="https://plaid.com/how-it-works-for-consumers/" target="_blank">Plaid</a> and provides you with facts and graphs to help you see the flow 💸 of <em>your</em> money.</p>
               </div>
               <div class="col-md-10 mx-auto col-lg-5">
-                <form class="p-4 p-md-5 border rounded-3 bg-light">
+                <!-- <form class="p-4 p-md-5 border rounded-3 bg-light">
                   <div class="form-floating mb-3">
                     <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
                     <label for="floatingInput">Email address</label>
@@ -40,7 +40,8 @@
                   <button class="w-100 btn btn-lg btn-primary" type="submit">Sign up</button>
                   <hr class="my-4">
                   <small class="text-muted">By clicking Sign up, you agree to the terms of use.</small>
-                </form>
+                </form> -->
+                <div id="firebaseui-auth-container"></div>
               </div>
             </div>
           </div>
@@ -72,12 +73,45 @@
             firebase.analytics();
           </script>
 
+          <!-- Firebase Auth -->
           <script src="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.js"></script>
 
           <script>
+            // FirebaseUI config.
+            var uiConfig = {
+              signInSuccessUrl: '/',
+              signInOptions: [
+                firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+              ],
+              // tosUrl and privacyPolicyUrl accept either url string or a callback
+              // function.
+              // Terms of service url/callback.
+              tosUrl: '<my-tos-url>',
+              // Privacy policy url/callback.
+              privacyPolicyUrl: function() {
+                window.location.assign('<my-privacy-policy-url>');
+              }
+            };
+
             // Initialize the FirebaseUI Widget using Firebase.
             var ui = new firebaseui.auth.AuthUI(firebase.auth());
+            // The start method will wait until the DOM is loaded.
+            ui.start('#firebaseui-auth-container', uiConfig);
+
+            firebase.auth().onAuthStateChanged((user) => {
+              if (user) {
+                // User is signed in, see docs for a list of available properties
+                // https://firebase.google.com/docs/reference/js/firebase.User
+                var uid = user.uid;
+                console.log("Logged in!")
+              } else {
+                // User is signed out
+                // ...
+              }
+            });
           </script>
+
+
         </body>
     </body>
 </html>
