@@ -8,7 +8,11 @@ app.use(express.static(__dirname + '/public'))
 app.use(express.urlencoded({ extended: true }))
 
 app.get('/', (req, res) => {
-    res.sendFile('views/index.html', { root: __dirname })
+  res.sendFile('views/index.html', { root: __dirname })
+})
+
+app.get('/profile', (req, res) => {
+  res.sendFile('views/profile.html', { root: __dirname })
 })
 
 app.listen(PORT, () => {
