@@ -1,6 +1,13 @@
 const express = require('express')
 const app = express()
-const PORT = process.env.PORT || 8000;
+const admin = require('firebase-admin')
+
+const PORT = process.env.PORT || 8000
+
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+  databaseURL: 'https://beam-94bf1-default-rtdb.firebaseio.com/'
+});
 
 app.use(express.static(__dirname + '/public'))
 
