@@ -13,21 +13,24 @@
       <link rel="stylesheet" type="text/css" href="/css/profile.css">
   </head>
   <body>
-    <div class="container px-4 py-5">
-      <header class="d-flex justify-content-between border-bottom mb-3">
-        <div class="mb-3 mb-md-0">
+    <div class="container px-4 py-4">
+      <header class="d-flex justify-content-between border-bottom pb-3">
+        <div>
           <h1>Beam</h1>
         </div>
         <div>
           <button type="button" class="btn btn-outline-dark" id="sign-out">Sign out</button>
         </div>
       </header>
-      <main class="row">
-        <div class="d-grid gap-2 col-6 mx-auto">
-          <button id="link-btn" class="btn btn-lg btn-dark" type="button" disabled>Connect with Plaid</button>
+      <main class="row py-3">
+        <div class="d-grid gap-2 col-md-6 mx-auto my-2">
+          <button id="link-btn" class="btn btn-lg btn-dark my-3" type="button" disabled>Connect through Plaid</button>
+          <h2>Connected accounts</h2>
+          <p class="lead">
+            You have not connected any of your bank accounts through Plaid yet. Do so and let Beam provide insight into your personal finances.
+          </p>
         </div>
-        <div class="col-6">
-
+        <div class="col-md-6">
         </div>
       </main>
     </div>
@@ -96,26 +99,35 @@
           body: JSON.stringify( {"uid": uid } ),
         })
         .then(response => response.json())
-        .then(data => initializeLinkSession(data.linkToken))
+        .then(data => initializeLinkSession(data.linkToken, uid))
       }
 
-      function initializeLinkSession(token) {
+      function initializeLinkSession(linkToken, uid) {
         const handler = Plaid.create({
-          token: token,
+          token: linkToken,
           onSuccess: (public_token, metadata) => {
+            console.log("Public token received")
             fetch('/api/access_token/set', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify( {"public_token": public_token } ),
+              body: JSON.stringify( {
+                "public_token": public_token,
+                "uid": uid
+              } ),
             })
             .then(response => response.json())
             .then(data => console.log(data))
           },
           onLoad: () => {},
-          onExit: (err, metadata) => {},
-          onEvent: (eventName, metadata) => {},
+          onExit: (err, metadata) => {
+            console.log(err)
+          },
+          onEvent: (eventName, metadata) => {
+            console.log(eventName)
+            console.log(metadata)
+          },
           receivedRedirectUri: null,
         });
 

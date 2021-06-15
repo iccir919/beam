@@ -39,7 +39,7 @@ app.post('/api/link_token/get', (req, res) => {
     user: {
       client_user_id: '123-test-user-id',
     },
-    client_name: 'Plaid Test App',
+    client_name: 'Beam',
     products: ['transactions'],
     country_codes: ['US'],
     language: 'en',
@@ -62,9 +62,23 @@ app.post('/api/link_token/get', (req, res) => {
 })
 
 app.post('/api/access_token/set', (req, res) => {
+  // exchange public token for access token
+  plaidClient
+    .exchangePublicToken(req.body.public_token)
+    .then(response => {
+      const accessToken = response.access_token;
+      const itemId = response.item_id;
+      console.log(accessToken)
+    })
+    .catch(err => {
+      console.log(err)
+    })
+  res.send(JSON.stringify({ "message": "Testing 1, 2, and 3" }))
+  // look up uid in db
 
-  console.log(req.body)
+  // if uid exists then add access token as a child of user object
 
+  // if uid does not exist, then save uid and access token as child of users
 })
 
 
