@@ -33,7 +33,7 @@ app.get('/profile', (req, res) => {
   res.sendFile('views/profile.html', { root: __dirname })
 })
 
-app.post('/api/token/get', (req, res) => {
+app.post('/api/link_token/get', (req, res) => {
   const response = plaidClient
   .createLinkToken({
     user: {
@@ -60,6 +60,13 @@ app.post('/api/token/get', (req, res) => {
 
 
 })
+
+app.post('/api/access_token/set', (req, res) => {
+
+  console.log(req.body)
+
+})
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening at http://localhost:${PORT}`)

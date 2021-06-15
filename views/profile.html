@@ -14,7 +14,7 @@
   </head>
   <body>
     <div class="container px-4 py-5">
-      <header class="d-flex justify-content-between border-bottom">
+      <header class="d-flex justify-content-between border-bottom mb-3">
         <div class="mb-3 mb-md-0">
           <h1>Beam</h1>
         </div>
@@ -22,6 +22,14 @@
           <button type="button" class="btn btn-outline-dark" id="sign-out">Sign out</button>
         </div>
       </header>
+      <main class="row">
+        <div class="d-grid gap-2 col-6 mx-auto">
+          <button id="link-btn" class="btn btn-lg btn-dark" type="button" disabled>Connect with Plaid</button>
+        </div>
+        <div class="col-6">
+
+        </div>
+      </main>
     </div>
 
     <script src="/js/jquery.js"></script>
@@ -80,7 +88,7 @@
 
     <script>
       function getLinkToken(uid) {
-        fetch('/api/token/get', {
+        fetch('/api/link_token/get', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -88,11 +96,36 @@
           body: JSON.stringify( {"uid": uid } ),
         })
         .then(response => response.json())
-        .then(data => console.log("linkToken", data.linkToken))
+        .then(data => initializeLinkSession(data.linkToken))
       }
 
       function initializeLinkSession(token) {
-        console.log(token)
+        const handler = Plaid.create({
+          token: token,
+          onSuccess: (public_token, metadata) => {
+            fetch('/api/access_token/set', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify( {"public_token": public_token } ),
+            })
+            .then(response => response.json())
+            .then(data => console.log(data))
+          },
+          onLoad: () => {},
+          onExit: (err, metadata) => {},
+          onEvent: (eventName, metadata) => {},
+          receivedRedirectUri: null,
+        });
+
+        $('#link-btn').on('click', function(e) {
+          if (handler != null) {
+            handler.open();
+          }
+        });
+
+        $('#link-btn').attr('disabled', false);
       }
     </script>
   </body>
