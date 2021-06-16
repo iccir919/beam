@@ -72,8 +72,9 @@
         if (true) {
           // User is signed in, see docs for a list of available properties
           // https://firebase.google.com/docs/reference/js/firebase.User
-          const uid = user.uid;
+          const uid = user.uid
           getLinkToken(uid)
+          getUser(uid)
         } else {
           location.href = '/';
         }
@@ -99,7 +100,7 @@
           body: JSON.stringify( {"uid": uid } ),
         })
         .then(response => response.json())
-        .then(data => initializeLinkSession(data.linkToken, uid))
+        .then(data => initializeLinkSession(data.link_token, uid))
       }
 
       function initializeLinkSession(linkToken, uid) {
@@ -138,6 +139,18 @@
         });
 
         $('#link-btn').attr('disabled', false);
+      }
+
+      function getUser(uid) {
+        fetch('/api/user/get', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify( {
+            "uid": uid
+          } ),
+        })
       }
     </script>
   </body>

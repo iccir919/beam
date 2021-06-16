@@ -52,13 +52,30 @@ app.post('/api/link_token/get', (req, res) => {
   })
   .then((response) => {
     const linkToken = response.link_token;
-    res.json({ "linkToken": linkToken })
+    res.json({ "link_token": linkToken })
   })
   .catch((err) => {
     // handle error
   });
+})
 
+app.post('/api/user/get', (req, res) => {
+  // Get a database reference to our users
+  const uid = req.body.uid
+  const profileRef = admin.database().ref('users/' + uid)
+  // Attach an asynchronous callback to read the data at our posts reference
+  profileRef.on('value', (snapshot) => {
+    if( snapshot.val() === null ) {
+      const newUserRef = admin.database().ref('/').child('users/' + uid)
+      newUserRef.set({
+        createdAt: new Date().toUTCString()
+      })
+    } else {
 
+    }
+  }, (errorObject) => {
+    console.log('The read failed: ' + errorObject.name);
+  });
 })
 
 app.post('/api/access_token/set', (req, res) => {
@@ -68,17 +85,10 @@ app.post('/api/access_token/set', (req, res) => {
     .then(response => {
       const accessToken = response.access_token;
       const itemId = response.item_id;
-      console.log(accessToken)
     })
     .catch(err => {
       console.log(err)
     })
-  res.send(JSON.stringify({ "message": "Testing 1, 2, and 3" }))
-  // look up uid in db
-
-  // if uid exists then add access token as a child of user object
-
-  // if uid does not exist, then save uid and access token as child of users
 })
 
 
