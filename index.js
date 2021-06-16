@@ -6,7 +6,7 @@ const app = express()
 const PORT = process.env.PORT || 8000
 
 app.use(express.urlencoded({extended: true}))
-app.use(express.json()) // To parse the incoming requests with JSON payloads
+app.use(express.json())
 app.use(express.static(__dirname + '/public'))
 
 const plaidClient = new plaid.Client({
@@ -34,16 +34,14 @@ app.get('/profile', (req, res) => {
 })
 
 app.post('/api/link_token/get', (req, res) => {
-  const response = plaidClient
-  .createLinkToken({
+  plaidClient.createLinkToken({
     user: {
-      client_user_id: '123-test-user-id',
+      client_user_id: req.body.uid,
     },
     client_name: 'Beam',
     products: ['transactions'],
     country_codes: ['US'],
     language: 'en',
-    webhook: 'https://sample-web-hook.com',
     account_filters: {
       depository: {
         account_subtypes: ['checking', 'savings'],
@@ -60,17 +58,14 @@ app.post('/api/link_token/get', (req, res) => {
 })
 
 app.post('/api/user/get', (req, res) => {
-  // Get a database reference to our users
-  const uid = req.body.uid
-  const userRef = admin.database().ref('users/' + uid)
-  // Attach an asynchronous callback to read the data at our posts reference
+  const userRef = admin.database().ref('users/' + req.body.uid)
   userRef.once('value', (snapshot) => {
     if( snapshot.val() === null ) {
       const usersRef = admin.database().ref('/users')
       const newUser = {
         createdAt: new Date().toUTCString()
       }
-      usersRef.child(uid).set(newUser)
+      usersRef.child(req.body.uid).set(newUser)
       res.json(newUser)
     } else {
       res.json(snapshot.val())
@@ -89,6 +84,11 @@ app.post('/api/access_token/set', (req, res) => {
       const itemId = response.item_id;
       const uid = req.body.uid;
 
+      const itemRef = admin.database().ref('/users/' + uid + '/items/' + itemId)
+      itemRef.set({
+        accessToken: accessToken,
+        createdAt: new Date().toUTCString()
+      })
     })
     .catch(err => {
       console.log(err)

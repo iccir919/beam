@@ -23,14 +23,14 @@
         </div>
       </header>
       <main class="row py-3">
-        <div class="d-grid gap-2 col-md-6 mx-auto my-2">
-          <button id="link-btn" class="btn btn-lg btn-dark my-3" type="button" disabled>Connect through Plaid</button>
-          <h2>Connected accounts</h2>
-          <p class="lead">
-            You have not connected any of your bank accounts through Plaid yet. Do so and let Beam provide insight into your personal finances.
-          </p>
-        </div>
         <div class="col-md-6">
+          <h1 id="greeting" class="display-2">Greetings</h1>
+          <p id="date" class="h3 text-muted"></p>
+        </div>
+        <div class="d-grid gap-2 col-md-6 mx-auto my-3">
+          <p class="h2">Connected accounts</p>
+          <div id="items-display"></div>
+          <button id="link-btn" class="btn btn-lg btn-dark my-4" type="button" disabled>Connect through Plaid</button>
         </div>
       </main>
     </div>
@@ -68,13 +68,15 @@
         $(".container").fadeIn()
       });
 
-      firebase.auth().onAuthStateChanged((user) => {
-        if (true) {
+      firebase.auth().onAuthStateChanged((usersAuth) => {
+        if (usersAuth) {
           // User is signed in, see docs for a list of available properties
           // https://firebase.google.com/docs/reference/js/firebase.User
-          const uid = user.uid
-          getLinkToken(uid)
-          getUser(uid)
+          getLinkToken(usersAuth.uid)
+          getUser(usersAuth)
+
+          $('#greeting').text('Greetings, ' + usersAuth.displayName)
+          $('#date').text(new Date().toDateString())
         } else {
           location.href = '/';
         }
@@ -141,26 +143,34 @@
         $('#link-btn').attr('disabled', false);
       }
 
-      function getUser(uid) {
+      function getUser(usersAuth) {
         fetch('/api/user/get', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify( {
-            "uid": uid
+            "uid": usersAuth.uid
           } ),
         })
         .then(response => response.json())
-        .then(data => {
-          console.log(data)
+        .then(usersProfile => {
+          displayItems(usersProfile.items)
         })
       }
 
-      function displayUser(userData) {
+      function displayItems(items) {
+        console.log(items)
+        if (items === undefined) {
+          $('#items-display').append(`
+            <p class="lead">
+              You have not connected any bank accounts to Beam yet.
+            </p>`)
+        }
       }
 
-      function displayItems(items) {
+      function getAccounts(items) {
+
       }
     </script>
   </body>
