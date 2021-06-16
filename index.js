@@ -62,16 +62,18 @@ app.post('/api/link_token/get', (req, res) => {
 app.post('/api/user/get', (req, res) => {
   // Get a database reference to our users
   const uid = req.body.uid
-  const profileRef = admin.database().ref('users/' + uid)
+  const userRef = admin.database().ref('users/' + uid)
   // Attach an asynchronous callback to read the data at our posts reference
-  profileRef.on('value', (snapshot) => {
+  userRef.once('value', (snapshot) => {
     if( snapshot.val() === null ) {
-      const newUserRef = admin.database().ref('/').child('users/' + uid)
-      newUserRef.set({
+      const usersRef = admin.database().ref('/users')
+      const newUser = {
         createdAt: new Date().toUTCString()
-      })
+      }
+      usersRef.child(uid).set(newUser)
+      res.json(newUser)
     } else {
-
+      res.json(snapshot.val())
     }
   }, (errorObject) => {
     console.log('The read failed: ' + errorObject.name);
@@ -85,6 +87,8 @@ app.post('/api/access_token/set', (req, res) => {
     .then(response => {
       const accessToken = response.access_token;
       const itemId = response.item_id;
+      const uid = req.body.uid;
+
     })
     .catch(err => {
       console.log(err)
