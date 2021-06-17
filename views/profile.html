@@ -155,23 +155,14 @@
         })
         .then(response => response.json())
         .then(usersProfile => {
-          displayItems(usersProfile.items)
+          getItems(usersProfile.items)
         })
       }
 
-      function displayItems(items) {
-        console.log(items)
-        if (items === undefined) {
-          $('#items-display').append(`
-            <p class="lead">
-              You have not connected any bank accounts to Beam yet.
-            </p>`)
-        }
-      }
-
-      function getAccounts(items) {
+      function getItems() {
 
       }
+
     </script>
   </body>
 </html>

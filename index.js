@@ -83,7 +83,11 @@ app.post('/api/access_token/set', (req, res) => {
       const accessToken = response.access_token;
       const itemId = response.item_id;
       const uid = req.body.uid;
+      // look up item
 
+      // look up institution
+
+      // save item and institution information
       const itemRef = admin.database().ref('/users/' + uid + '/items/' + itemId)
       itemRef.set({
         accessToken: accessToken,
@@ -93,6 +97,14 @@ app.post('/api/access_token/set', (req, res) => {
     .catch(err => {
       console.log(err)
     })
+})
+
+app.post('/api/item/get', (req, res) => {
+
+})
+
+app.post('/api/accounts/get', (req, res) => {
+
 })
 
 
