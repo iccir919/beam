@@ -63,7 +63,9 @@ app.post('/api/user/get', (req, res) => {
     if( snapshot.val() === null ) {
       const usersRef = admin.database().ref('/users')
       const newUser = {
-        createdAt: new Date().toUTCString()
+        createdAt: new Date().toUTCString(),
+        items: null
+        // add display name
       }
       usersRef.child(req.body.uid).set(newUser)
       res.json(newUser)
@@ -83,11 +85,8 @@ app.post('/api/access_token/set', (req, res) => {
       const accessToken = response.access_token;
       const itemId = response.item_id;
       const uid = req.body.uid;
-      // look up item
 
-      // look up institution
-
-      // save item and institution information
+      // save item
       const itemRef = admin.database().ref('/users/' + uid + '/items/' + itemId)
       itemRef.set({
         accessToken: accessToken,
@@ -100,7 +99,13 @@ app.post('/api/access_token/set', (req, res) => {
 })
 
 app.post('/api/item/get', (req, res) => {
+  // lookup item
 
+  // lookup institution
+
+  // save item information
+
+  // return item
 })
 
 app.post('/api/accounts/get', (req, res) => {

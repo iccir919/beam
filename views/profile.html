@@ -159,8 +159,15 @@
         })
       }
 
-      function getItems() {
-
+      function getItems(items) {
+        console.log(items)
+        if (items === undefined) {
+          $("#items-display").append(`
+            <p class="lead">
+              You have not connected any of your bank accounts through Plaid yet. Do so and let Beam provide insight into your personal finances.
+            </p>
+          `)
+        }
       }
 
     </script>
