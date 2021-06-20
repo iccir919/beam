@@ -5,7 +5,6 @@ const plaid = require('plaid')
 const app = express()
 const PORT = process.env.PORT || 8000
 
-app.use(express.urlencoded({extended: true}))
 app.use(express.json())
 app.use(express.static(__dirname + '/public'))
 
@@ -101,7 +100,7 @@ app.post('/api/access_token/set', (req, res) => {
 app.post('/api/item/get', (req, res) => {
   // lookup item
   console.log("/api/item/get")
-  const itemRef = admin.database().ref('/users/' + req.body.uid + '/' + req.body.itemId)
+  const itemRef = admin.database().ref('/users/' + req.body.uid + '/items/' + req.body.itemId)
   itemRef.once('value', (snapshot) => {
     console.log(snapshot.val())
   })

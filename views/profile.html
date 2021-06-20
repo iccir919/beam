@@ -123,6 +123,8 @@
             .then(response => response.json())
             .then(data => {
               console.log("itemId:", res.body.itemId)
+              getItem(req.body.itemId, uid)
+
             })
           },
           onLoad: () => {},
@@ -165,14 +167,15 @@
               </p>
             `)
           } else {
-            usersProfile.items.forEach(item => {
-              getItem(item)
+            Object.keys(usersProfile.items).forEach(itemId => {
+              getItem(itemId, usersAuth.uid)
             })
           }
         })
       }
 
-      function getItem(item, uid) {
+
+      function getItem(itemId, uid) {
         fetch('/api/item/get', {
           method: 'POST',
           headers: {
@@ -180,8 +183,12 @@
           },
           body: JSON.stringify({
             uid: uid,
-            itemId: item
+            itemId: itemId
           })
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data)
         })
       }
 
