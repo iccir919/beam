@@ -98,18 +98,43 @@ app.post('/api/access_token/set', (req, res) => {
 })
 
 app.post('/api/item/get', (req, res) => {
-  // lookup item
-  console.log("/api/item/get")
+  // lookup item in Firebase for access_token
   const itemRef = admin.database().ref('/users/' + req.body.uid + '/items/' + req.body.itemId)
   itemRef.once('value', (snapshot) => {
     console.log(snapshot.val())
+
+    const itemDataFunctions = [getItem, getInstitution, getAccounts]
+
+    Promise.all(itemDataFunctions.map(dataFunction => dataFunction(snapshot.val().accessToken)))
+    .then(itemData => {
+      console.log(itemData)
+    })
+
+    res.json({
+      item: {
+        itemId: req.body.itemId
+      }
+    })
   })
-  // lookup institution
-
-  // save item information
-
-  // return item
 })
+
+function getItem(access_token) {
+  return new Promise((resolve, reject) => {
+    resolve(access_token)
+  })
+}
+
+function getInstitution(access_token) {
+  return new Promise((resolve, reject) => {
+    resolve(access_token)
+  })
+}
+
+function getAccounts(access_token) {
+  return new Promise((resolve, reject) => {
+    resolve(access_token)
+  })
+}
 
 app.post('/api/accounts/get', (req, res) => {
 
