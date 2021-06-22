@@ -98,47 +98,39 @@ app.post('/api/access_token/set', (req, res) => {
 })
 
 app.post('/api/item/get', (req, res) => {
-  // lookup item in Firebase for access_token
-  const itemRef = admin.database().ref('/users/' + req.body.uid + '/items/' + req.body.itemId)
-  itemRef.once('value', (snapshot) => {
-    console.log(snapshot.val())
+  getAccessToken(
+    req.body.itemId,
+    req.body.uid,
+    function(err, accessToken) {
+      if (err) handleError(err)
 
-    const itemDataFunctions = [getItem, getInstitution, getAccounts]
-
-    Promise.all(itemDataFunctions.map(dataFunction => dataFunction(snapshot.val().accessToken)))
-    .then(itemData => {
-      console.log(itemData)
-    })
-
-    res.json({
-      item: {
-        itemId: req.body.itemId
-      }
-    })
-  })
+      plaidClient.getItem(accessToken, function(err, data) {
+        if (err) handleError(err)
+        console.log(data)
+        res.json({
+          item: {
+            itemId: null
+          }
+        })
+      })
+    }
+  )
 })
 
-function getItem(access_token) {
-  return new Promise((resolve, reject) => {
-    resolve(access_token)
-  })
+function handleError(err) {
+  console.error(err)
+  res.status(500)
+  res.render('error', { error: err })
 }
 
-function getInstitution(access_token) {
-  return new Promise((resolve, reject) => {
-    resolve(access_token)
-  })
+function getAccessToken(itemId, uid, callback) {
+    // lookup item in Firebase for access_token
+    const itemRef = admin.database().ref('/users/' + uid + '/items/' + itemId)
+    itemRef.once('value', (snapshot) => {
+      if (snapshot.val() === null) callback({error: "Item not found"})
+      callback(null, snapshot.val().accessToken)
+    })
 }
-
-function getAccounts(access_token) {
-  return new Promise((resolve, reject) => {
-    resolve(access_token)
-  })
-}
-
-app.post('/api/accounts/get', (req, res) => {
-
-})
 
 
 app.listen(PORT, () => {
