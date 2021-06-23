@@ -98,30 +98,31 @@ app.post('/api/access_token/set', (req, res) => {
 })
 
 app.post('/api/item/get', (req, res) => {
+  let result = {}
   getAccessToken(
     req.body.itemId,
     req.body.uid,
     function(err, accessToken) {
-      if (err) handleError(err)
+      plaidClient.getItem(accessToken, function(err, itemData) {
+        plaidClient.getInstitutionById(
+          itemData.item.institution_id,
+          ['US', 'CA'], {},
+          function(err, institituionData) {
+            console.log("institution", institituionData)
+            console.log("item", itemData)
 
-      plaidClient.getItem(accessToken, function(err, data) {
-        if (err) handleError(err)
-        console.log(data)
-        res.json({
-          item: {
-            itemId: null
+            result.item = {}
+            result.institution = {}
+            result.status = itemData.status
+            result.institution.institution_id = institituionData.institution.institution_id
+            result.institution.name = institituionData.institution.name
+            res.json(result)
           }
-        })
+        )
       })
     }
   )
 })
-
-function handleError(err) {
-  console.error(err)
-  res.status(500)
-  res.render('error', { error: err })
-}
 
 function getAccessToken(itemId, uid, callback) {
     // lookup item in Firebase for access_token
