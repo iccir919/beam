@@ -59,20 +59,23 @@ app.post('/api/link_token/get', (req, res) => {
 app.post('/api/user/get', (req, res) => {
   const userRef = admin.database().ref('users/' + req.body.uid)
   userRef.once('value', (snapshot) => {
-    if( snapshot.val() === null ) {
-      const usersRef = admin.database().ref('/users')
-      const newUser = {
-        createdAt: new Date().toUTCString()
-        // add display name
-      }
-      usersRef.child(req.body.uid).set(newUser)
-      res.json(newUser)
-    } else {
-      res.json(snapshot.val())
-    }
+    res.json({
+      createdAt: snapshot.val().createdAt,
+      items: Object.keys(snapshot.val().items)
+    })
   }, (errorObject) => {
     console.log('The read failed: ' + errorObject.name);
   });
+})
+
+
+app.post('/api/user/set', (req, res) => {
+  const usersRef = admin.database().ref('/users')
+  const newUser = {
+    createdAt: new Date().toUTCString()
+  }
+  usersRef.child(req.body.uid).set(newUser)
+  res.json(newUser)
 })
 
 app.post('/api/access_token/set', (req, res) => {
@@ -119,6 +122,24 @@ app.post('/api/item/get', (req, res) => {
             res.json(result)
           }
         )
+      })
+    }
+  )
+})
+
+app.post('/api/accounts/get', (req, res) => {
+  getAccessToken(
+    req.body.itemId,
+    req.body.uid,
+    function(err, accessToken) {
+      plaidClient.getAccounts(accessToken, {}, function(err, accountsData) {
+        accountsData.accounts = accountsData.accounts.filter(account => {
+          if (account.type === 'credit' || account.type === 'depository') return true
+          else return false
+        })
+        res.json({
+          accounts: accountsData.accounts
+        })
       })
     }
   )

@@ -103,6 +103,7 @@
         })
         .then(response => response.json())
         .then(data => initializeLinkSession(data.link_token, uid))
+        .catch(err => console.error(err))
       }
 
       function initializeLinkSession(linkToken, uid) {
@@ -122,8 +123,7 @@
             })
             .then(response => response.json())
             .then(data => {
-              getItem(req.body.itemId, uid)
-
+              console.log(data)
             })
           },
           onLoad: () => {},
@@ -158,7 +158,7 @@
         })
         .then(response => response.json())
         .then(usersProfile => {
-          console.log("profile", usersProfile)
+          console.log("user", usersProfile)
           if (usersProfile.items === undefined) {
             $("#items-display").append(`
               <p class="lead">
@@ -171,10 +171,12 @@
             })
           }
         })
+        .catch(err => console.error(err))
       }
 
 
       function getItem(itemId, uid) {
+
         fetch('/api/item/get', {
           method: 'POST',
           headers: {
@@ -188,7 +190,9 @@
         .then(response => response.json())
         .then(data => {
           displayItem(data)
+          getAccounts(itemId, uid)
         })
+        .catch(err => console.error(err))
       }
 
       function displayItem(itemObject) {
@@ -204,6 +208,24 @@
           </div>
         `
         $('#items').append(itemHtml)
+      }
+
+      function getAccounts(itemId, uid) {
+        fetch('/api/accounts/get', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            uid: uid,
+            itemId: itemId
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log("accounts", data)
+        })
+        .catch(err => console.error(err))
       }
 
     </script>
