@@ -61,7 +61,7 @@ app.post('/api/user/get', (req, res) => {
     if (snapshot.val()) {
       res.json({
         createdAt: snapshot.val().createdAt,
-        itemIds: Object.keys(snapshot.val().items)
+        item_ids: Object.keys(snapshot.val().items)
       })
     } else {
       const usersRef = admin.database().ref('users')
@@ -80,23 +80,23 @@ app.post('/api/access_token/set', (req, res) => {
     .exchangePublicToken(req.body.public_token)
     .then(response => {
       const accessToken = response.access_token;
-      const itemId = response.item_id;
+      const item_id = response.item_id;
       const uid = req.body.uid;
 
       // save item
-      const itemRef = admin.database().ref('/users/' + uid + '/items/' + itemId)
+      const itemRef = admin.database().ref('/users/' + uid + '/items/' + item_id)
       itemRef.set({
         accessToken: accessToken,
         createdAt: new Date().toUTCString()
       })
-      res.json({itemId: response.item_id})
+      res.json({item_id: response.item_id})
     })
 })
 
 app.post('/api/item/get', (req, res) => {
   let result = {}
   getAccessToken(
-    req.body.itemId,
+    req.body.item_id,
     req.body.uid,
     function(err, accessToken) {
       plaidClient.getItem(accessToken, function(err, itemData) {
@@ -104,7 +104,7 @@ app.post('/api/item/get', (req, res) => {
           itemData.item.institution_id,
           ['US', 'CA'], {},
           function(err, institituionData) {
-            result.item = {}
+            result.item_id = itemData.item.item_id
             result.institution = {}
             result.status = itemData.status
             result.institution.institution_id = institituionData.institution.institution_id
@@ -119,7 +119,7 @@ app.post('/api/item/get', (req, res) => {
 
 app.post('/api/accounts/get', (req, res) => {
   getAccessToken(
-    req.body.itemId,
+    req.body.item_id,
     req.body.uid,
     function(err, accessToken) {
       plaidClient.getAccounts(accessToken, {}, function(err, accountsData) {
@@ -135,9 +135,9 @@ app.post('/api/accounts/get', (req, res) => {
   )
 })
 
-function getAccessToken(itemId, uid, callback) {
+function getAccessToken(item_id, uid, callback) {
     // lookup item in Firebase for access_token
-    const itemRef = admin.database().ref('/users/' + uid + '/items/' + itemId)
+    const itemRef = admin.database().ref('/users/' + uid + '/items/' + item_id)
     itemRef.once('value', (snapshot) => {
       if (snapshot.val() === null) callback({error: "Item not found"})
       callback(null, snapshot.val().accessToken)

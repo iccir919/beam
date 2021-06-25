@@ -29,7 +29,9 @@
         </div>
         <div class="d-grid gap-2 col-md-6 mx-auto my-3">
           <p class="h2">Connected accounts</p>
-          <div id="items"></div>
+          <div id="items">
+
+          </div>
           <button id="link-btn" class="btn btn-lg btn-dark my-4" type="button" disabled>Connect through Plaid</button>
         </div>
       </main>
@@ -75,7 +77,7 @@
             const uid = user.uid;
             getUser(uid)
             getLinkToken(uid)
-            $('#greeting').text('Greetings, ' + usersAuth.displayName)
+            $('#greeting').text('Greetings, ' + user.displayName)
             $('#date').text(new Date().toDateString())
           } else {
             location.href = '/';
@@ -120,7 +122,8 @@
             })
             .then(response => response.json())
             .then(result => {
-              getItem(result.itemId, uid)
+              console.log("result", result)
+              getItem(result.item_id, uid)
             })
           },
           onLoad: () => {},
@@ -155,15 +158,15 @@
         })
         .then(response => response.json())
         .then(user => {
-          if (user.itemIds === undefined) {
+          if (user.item_ids === undefined) {
             $("#items-display").append(`
               <p class="lead">
                 You have not connected any of your bank accounts through Plaid yet. Do so and let Beam provide insight into your personal finances.
               </p>
             `)
           } else {
-            user.itemIds.forEach(itemId => {
-              getItem(itemId, uid)
+            user.item_ids.forEach(item_id => {
+              getItem(item_id, uid)
             })
           }
         })
@@ -171,7 +174,7 @@
       }
 
 
-      function getItem(itemId, uid) {
+      function getItem(item_id, uid) {
         fetch('/api/item/get', {
           method: 'POST',
           headers: {
@@ -179,13 +182,13 @@
           },
           body: JSON.stringify({
             uid: uid,
-            itemId: itemId
+            item_id: item_id
           })
         })
         .then(response => response.json())
-        .then(data => {
-          displayItem(data)
-          getAccounts(itemId, uid)
+        .then(itemObject => {
+          displayItem(itemObject, uid)
+          getAccounts(itemObject.item_id, uid)
         })
         .catch(err => console.error(err))
       }
@@ -195,7 +198,7 @@
           itemObject.status.transactions.last_successful_update.substring(0, 10)
         )
         const itemHtml = `
-          <div class="card">
+          <div id="item-${itemObject.item_id}" class="card">
             <div class="card-body">
               <h5 class="card-title">${itemObject.institution.name}</h5>
               <h6 class="card-subtitle mb-2 text-muted">Last updated: ${lastSuccessfulUpdate.toDateString()}</h6>
@@ -205,7 +208,7 @@
         $('#items').append(itemHtml)
       }
 
-      function getAccounts(itemId, uid) {
+      function getAccounts(item_id, uid) {
         fetch('/api/accounts/get', {
           method: 'POST',
           headers: {
@@ -213,7 +216,7 @@
           },
           body: JSON.stringify({
             uid: uid,
-            itemId: itemId
+            item_id: item_id
           })
         })
         .then(response => response.json())
