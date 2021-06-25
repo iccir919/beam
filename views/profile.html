@@ -66,26 +66,23 @@
     <script>
       $(function() {
         $(".container").fadeIn()
+        $("#sign-out").click((param) => {
+          firebase.auth().signOut();
+        })
+
+        firebase.auth().onAuthStateChanged((user) => {
+          if (user) {
+            const uid = user.uid;
+            getUser(uid)
+            getLinkToken(uid)
+            $('#greeting').text('Greetings, ' + usersAuth.displayName)
+            $('#date').text(new Date().toDateString())
+          } else {
+            location.href = '/';
+          }
+        });
       });
 
-      firebase.auth().onAuthStateChanged((usersAuth) => {
-        if (usersAuth) {
-          // User is signed in, see docs for a list of available properties
-          // https://firebase.google.com/docs/reference/js/firebase.User
-          getLinkToken(usersAuth.uid)
-          getUser(usersAuth)
-
-          $('#greeting').text('Greetings, ' + usersAuth.displayName)
-          $('#date').text(new Date().toDateString())
-        } else {
-          location.href = '/';
-        }
-      });
-
-      $("#sign-out").click((param) => {
-        console.log(param);
-        firebase.auth().signOut();
-      })
     </script>
 
     <script src="/data/financialData.js"></script>
@@ -122,8 +119,8 @@
               } ),
             })
             .then(response => response.json())
-            .then(data => {
-              console.log(data)
+            .then(result => {
+              getItem(result.itemId, uid)
             })
           },
           onLoad: () => {},
@@ -146,28 +143,27 @@
         $('#link-btn').attr('disabled', false);
       }
 
-      function getUser(usersAuth) {
+      function getUser(uid) {
         fetch('/api/user/get', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify( {
-            "uid": usersAuth.uid
+            "uid": uid
           } ),
         })
         .then(response => response.json())
-        .then(usersProfile => {
-          console.log("user", usersProfile)
-          if (usersProfile.items === undefined) {
+        .then(user => {
+          if (user.itemIds === undefined) {
             $("#items-display").append(`
               <p class="lead">
                 You have not connected any of your bank accounts through Plaid yet. Do so and let Beam provide insight into your personal finances.
               </p>
             `)
           } else {
-            Object.keys(usersProfile.items).forEach(itemId => {
-              getItem(itemId, usersAuth.uid)
+            user.itemIds.forEach(itemId => {
+              getItem(itemId, uid)
             })
           }
         })
@@ -176,7 +172,6 @@
 
 
       function getItem(itemId, uid) {
-
         fetch('/api/item/get', {
           method: 'POST',
           headers: {

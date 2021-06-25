@@ -52,30 +52,26 @@ app.post('/api/link_token/get', (req, res) => {
     res.json({ "link_token": linkToken })
   })
   .catch((err) => {
-    // handle error
   });
 })
 
 app.post('/api/user/get', (req, res) => {
   const userRef = admin.database().ref('users/' + req.body.uid)
   userRef.once('value', (snapshot) => {
-    res.json({
-      createdAt: snapshot.val().createdAt,
-      items: Object.keys(snapshot.val().items)
-    })
-  }, (errorObject) => {
-    console.log('The read failed: ' + errorObject.name);
-  });
-})
-
-
-app.post('/api/user/set', (req, res) => {
-  const usersRef = admin.database().ref('/users')
-  const newUser = {
-    createdAt: new Date().toUTCString()
-  }
-  usersRef.child(req.body.uid).set(newUser)
-  res.json(newUser)
+    if (snapshot.val()) {
+      res.json({
+        createdAt: snapshot.val().createdAt,
+        itemIds: Object.keys(snapshot.val().items)
+      })
+    } else {
+      const usersRef = admin.database().ref('users')
+      const newUser = {
+        createdAt: new Date().toUTCString()
+      }
+      usersRef.child(req.body.uid).set(newUser)
+      res.json(newUser)
+    }
+  })
 })
 
 app.post('/api/access_token/set', (req, res) => {
@@ -95,9 +91,6 @@ app.post('/api/access_token/set', (req, res) => {
       })
       res.json({itemId: response.item_id})
     })
-    .catch(err => {
-      console.log(err)
-    })
 })
 
 app.post('/api/item/get', (req, res) => {
@@ -111,9 +104,6 @@ app.post('/api/item/get', (req, res) => {
           itemData.item.institution_id,
           ['US', 'CA'], {},
           function(err, institituionData) {
-            console.log("institution", institituionData)
-            console.log("item", itemData)
-
             result.item = {}
             result.institution = {}
             result.status = itemData.status
