@@ -101,7 +101,7 @@
           body: JSON.stringify( {"uid": uid } ),
         })
         .then(response => response.json())
-        .then(data => initializeLinkSession(data.link_token, uid))
+        .then(link_token_object => initializeLinkSession(link_token_object.link_token, uid))
         .catch(err => console.error(err))
       }
 
@@ -121,9 +121,8 @@
               } ),
             })
             .then(response => response.json())
-            .then(result => {
-              console.log("result", result)
-              getItem(result.item_id, uid)
+            .then(item_object => {
+              getItem(item_object.item_id, uid)
             })
           },
           onLoad: () => {},
@@ -157,15 +156,15 @@
           } ),
         })
         .then(response => response.json())
-        .then(user => {
-          if (user.item_ids === undefined) {
-            $("#items-display").append(`
+        .then(user_object => {
+          if (user_object.item_ids === undefined) {
+            $("#items").append(`
               <p class="lead">
                 You have not connected any of your bank accounts through Plaid yet. Do so and let Beam provide insight into your personal finances.
               </p>
             `)
           } else {
-            user.item_ids.forEach(item_id => {
+            user_object.item_ids.forEach(item_id => {
               getItem(item_id, uid)
             })
           }
@@ -186,22 +185,26 @@
           })
         })
         .then(response => response.json())
-        .then(itemObject => {
-          displayItem(itemObject, uid)
-          getAccounts(itemObject.item_id, uid)
+        .then(item_object => {
+          displayItem(item_object, uid)
+          getAccounts(item_object.item_id, uid)
         })
         .catch(err => console.error(err))
       }
 
-      function displayItem(itemObject) {
+      function displayItem(item_object) {
         const lastSuccessfulUpdate = new Date(
-          itemObject.status.transactions.last_successful_update.substring(0, 10)
+          item_object.status.transactions.last_successful_update.substring(0, 10)
         )
         const itemHtml = `
-          <div id="item-${itemObject.item_id}" class="card">
+          <div id="item-${item_object.item_id}" class="card">
             <div class="card-body">
-              <h5 class="card-title">${itemObject.institution.name}</h5>
-              <h6 class="card-subtitle mb-2 text-muted">Last updated: ${lastSuccessfulUpdate.toDateString()}</h6>
+              <h5 class="card-title">${item_object.institution.name}</h5>
+              <ul id="item-${item_object.item_id}-accounts" class="list-group list-group-flush">
+              </ul>
+            </div>
+            <div class="card-footer">
+              <small class="text-muted">Last updated: ${lastSuccessfulUpdate.toDateString()}</small>
             </div>
           </div>
         `
@@ -220,10 +223,22 @@
           })
         })
         .then(response => response.json())
-        .then(data => {
-          console.log("accounts", data)
+        .then(accounts_object => {
+          console.log("accounts", accounts_object)
+          displayAccounts(accounts_object)
         })
         .catch(err => console.error(err))
+      }
+
+      function displayAccounts(accounts_object) {
+        accounts_object.accounts.forEach(account => {
+          $(`#item-${accounts_object.item_id}-accounts`).append(`
+            <li id="account-${account.account_id}" class="list-group-item">
+              <input class="form-check-input me-1" type="checkbox" value="">
+              ${account.name} - ${account.mask}
+            </li>
+          `)
+        })
       }
 
     </script>

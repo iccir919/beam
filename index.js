@@ -61,7 +61,9 @@ app.post('/api/user/get', (req, res) => {
     if (snapshot.val()) {
       res.json({
         createdAt: snapshot.val().createdAt,
-        item_ids: Object.keys(snapshot.val().items)
+        item_ids: snapshot.val().items ?
+          Object.keys(snapshot.val().items)
+          : undefined
       })
     } else {
       const usersRef = admin.database().ref('users')
@@ -79,14 +81,14 @@ app.post('/api/access_token/set', (req, res) => {
   plaidClient
     .exchangePublicToken(req.body.public_token)
     .then(response => {
-      const accessToken = response.access_token;
+      const access_token = response.access_token;
       const item_id = response.item_id;
       const uid = req.body.uid;
 
       // save item
       const itemRef = admin.database().ref('/users/' + uid + '/items/' + item_id)
       itemRef.set({
-        accessToken: accessToken,
+        access_token: access_token,
         createdAt: new Date().toUTCString()
       })
       res.json({item_id: response.item_id})
@@ -98,15 +100,15 @@ app.post('/api/item/get', (req, res) => {
   getAccessToken(
     req.body.item_id,
     req.body.uid,
-    function(err, accessToken) {
-      plaidClient.getItem(accessToken, function(err, itemData) {
+    function(err, access_token) {
+      plaidClient.getItem(access_token, function(err, item_object) {
         plaidClient.getInstitutionById(
-          itemData.item.institution_id,
+          item_object.item.institution_id,
           ['US', 'CA'], {},
           function(err, institituionData) {
-            result.item_id = itemData.item.item_id
+            result.item_id = item_object.item.item_id
             result.institution = {}
-            result.status = itemData.status
+            result.status = item_object.status
             result.institution.institution_id = institituionData.institution.institution_id
             result.institution.name = institituionData.institution.name
             res.json(result)
@@ -121,14 +123,16 @@ app.post('/api/accounts/get', (req, res) => {
   getAccessToken(
     req.body.item_id,
     req.body.uid,
-    function(err, accessToken) {
-      plaidClient.getAccounts(accessToken, {}, function(err, accountsData) {
-        accountsData.accounts = accountsData.accounts.filter(account => {
-          if (account.type === 'credit' || account.type === 'depository') return true
-          else return false
-        })
+    function(err, access_token) {
+      plaidClient.getAccounts(access_token, {}, function(err, accounts_object) {
+        accounts_object.accounts = accounts_object.accounts.filter(
+          account => account.subtype === "checking"
+          || account.subtype === "savings"
+          || account.type === "credit"
+        )
         res.json({
-          accounts: accountsData.accounts
+          item_id: req.body.item_id,
+          accounts: accounts_object.accounts
         })
       })
     }
@@ -140,7 +144,7 @@ function getAccessToken(item_id, uid, callback) {
     const itemRef = admin.database().ref('/users/' + uid + '/items/' + item_id)
     itemRef.once('value', (snapshot) => {
       if (snapshot.val() === null) callback({error: "Item not found"})
-      callback(null, snapshot.val().accessToken)
+      callback(null, snapshot.val().access_token)
     })
 }
 
