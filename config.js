@@ -1,4 +1,4 @@
-const firebaseConfig = {
+const config = {
     apiKey: "AIzaSyBMBn_hW0zq-o068OSiAvYjsJHtRhfLKs8",
     authDomain: "beam-ae619.firebaseapp.com",
     projectId: "beam-ae619",
