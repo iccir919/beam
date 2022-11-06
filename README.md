@@ -3,7 +3,6 @@
 Illuminating Your Personal Finances
 
 ## User stories
-As a... I want to.. so that I can...
 - [ ] As a user, I am enticed from the landing page by what BEAM does, so I will want to sign-up or log back in
 - [ ] As a user, I want to login with my email address or social accounts, so I do not have to create a new account
 - [ ] As a user, after I login, I can see my connected bank accounts or am prompted to connect my bank account
