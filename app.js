@@ -1,15 +1,14 @@
 const express = require('express');
+const path = require('path');
+const PORT = process.env.PORT || 3000;
+
 const app = express();
 
-let port = process.env.PORT;
-if (port == null || port == '') {
-    port = 3000;
-}
+app
+    .use(express.static(path.join(__dirname, 'public')))
+    .set('view engine', 'ejs')
+    .listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
 app.get('/', (req, res) => {
-    res.send('Beam - Illuminate Your Finances');
+    res.render('pages/index');
 });
-
-app.listen(port, () => {
-    console.log(`App listening on port ${port}`);
-})
