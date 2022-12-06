@@ -1,20 +1,25 @@
-const express = require('express');
-const path = require('path');
-const { Client } = require('pg');
-const PORT = process.env.PORT || 3000;
+require('dotenv').config();
 
+const express = require('express');
 const app = express();
 
-const client = new Client({
-    connectionString: process.env.DATABASE_URL
-});
+const path = require('path');
 
-client.connect();
+const PORT = process.env.PORT || 3000;
 
-app.use(express.static(path.join(__dirname, 'public')))
-app.set('view engine', 'ejs')
-app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
+const db = require('./queries');
+
+app.use(express.static(path.join(__dirname, 'public')));
+app.set('view engine', 'ejs');
+
+app.get('/users', db.getUsers);
+app.get('/users/:id', db.getUserById);
+app.post('/users', db.createUser);
 
 app.get('/', (req, res) => {
     res.render('pages/index');
 });
+
+
+app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
+
