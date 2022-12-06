@@ -1,8 +1,7 @@
 require('dotenv').config();
 const { Pool } = require('pg');
 
-
-const DATABASE_URL = process.env.DATABASE_URL || `postgresql://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT}/${process.env.PGDATABASE}`
+const DATABASE_URL = process.env.DATABASE_URL || `postgresql://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT}/${process.env.PGDATABASE}`;
 
 const pool = new Pool({
     DATABASE_URL
