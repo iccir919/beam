@@ -19,6 +19,10 @@ export const callMyServer = async function (
     return data;
 }
 
+export const showSelector = function(selector) {
+    document.querySelector(selector).classList.remove("d-none");
+}
+
 export const showOutput = function (textToShow) {
     if (textToShow === null) return;
     const output = document.querySelector("#output");
