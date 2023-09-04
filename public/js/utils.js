@@ -23,6 +23,10 @@ export const showSelector = function(selector) {
     document.querySelector(selector).classList.remove("d-none");
 }
 
+export const hideSelector = function(selector) {
+    document.querySelector(selector).classList.add("d-none");
+}
+
 export const showOutput = function (textToShow) {
     if (textToShow === null) return;
     const output = document.querySelector("#output");

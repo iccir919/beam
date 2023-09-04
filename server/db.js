@@ -70,6 +70,12 @@ dbWrapper
         return result;
     }
 
+    const getUserList = async function () {
+        const result = await db.get(`SELECT id, username FROM users`);
+        return result
+    }
+
     module.exports = {
-        getUserRecord
+        getUserRecord,
+        getUserList
     }

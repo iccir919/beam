@@ -3,7 +3,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 
-const APP_PORT = process.env.APP_PORT || 8000;
+const APP_PORT = process.env.APP_PORT || 3000;
 
 /**
  * Initialization!
@@ -29,7 +29,6 @@ app.use("/server/users", usersRouter);
 /* Add in some basic error handling so server doesn't crash if
  * it runs into an error
  */
-
 const errorHandler = function(err, req, res, next) {
     console.error(`Your error:`);
     console.error(err);

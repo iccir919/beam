@@ -11,8 +11,16 @@
         <div class="container w-75 pt-5">
             <h1>Beam</h1>
             <p>Bringing illumination and insight to your finances!</p>
-            <div id="notSignedIn" class="d-none">
-                <h4>Create an account!</h4>
+            <div id="notSignedIn" class="d-none d-flex justify-content-evenly align-items-stretch">
+                <div class="d-flex flex-column gap-2 border border-3 rounded p-3">
+                    <h4>Create an account!</h4>
+                    <label for="#username">Account username</label><input placeholder="JoeTest" id="username"/>
+                    <button type="button" class="btn btn-primary" id="createAccount">Create account!</button>
+                </div>
+            </div>
+
+            <div id="signedIn" class="d-none w-75 border-3 rounded p-3 mx-auto">
+                
             </div>
         </div>
         <div id="output"></div>

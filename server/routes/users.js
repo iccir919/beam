@@ -32,4 +32,13 @@ router.get("/get_my_info", async (req, res, next) => {
     }
 })
 
+router.get("/list", async (req, res, next) => {
+    try {
+        const result = db.getUserList();
+        res.json(result);
+    } catch(error) {
+        next(error)
+    }
+})
+
 module.exports = router;
